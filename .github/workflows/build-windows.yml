@@ -1,0 +1,75 @@
+name: Build Windows Installer
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build dpdf binaries
+        run: |
+          cargo build --release --locked -p pdfcraft -p pdfcraft-cli --target x86_64-pc-windows-msvc
+
+      - name: Set up Inno Setup
+        run: choco install innosetup --no-progress -y
+
+      - name: Compile Inno Setup Installer (.exe)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path "dist/release" | Out-Null
+          New-Item -ItemType Directory -Force -Path "target/windows-package/models" | Out-Null
+          iscc packaging/windows/dpdf.iss
+
+      - name: Set up WiX Toolset
+        run: dotnet tool install --global wix --version 5.0.2
+
+      - name: Compile WiX MSI Installer (.msi)
+        shell: pwsh
+        run: |
+          $BinDir = "target/x86_64-pc-windows-msvc/release"
+          $Stage = "target/windows-package/stage"
+          New-Item -ItemType Directory -Force -Path $Stage | Out-Null
+          Copy-Item "$BinDir\pdfcraft.exe", "$BinDir\pdfcraft-cli.exe" $Stage
+          Copy-Item "LICENSE-MIT", "LICENSE-APACHE", "NOTICE" $Stage
+          Copy-Item "assets/app-icon/LICENSE-document.txt" $Stage
+          $Models = "target/windows-package/models"
+          New-Item -ItemType Directory -Force -Path $Models | Out-Null
+          # Create placeholder if models not downloaded yet for build test
+          if (-not (Test-Path "$Models\ATTRIBUTION.txt")) {
+            Set-Content "$Models\ATTRIBUTION.txt" "Local OCR models"
+          }
+
+          wix build packaging/windows/pdfcraft.wxs `
+            packaging/windows/installer-ui.wxs `
+            -arch x64 `
+            -d "Version=1.0.0" `
+            -d "BinDir=$Stage" `
+            -d "ModelsDir=$Models" `
+            -d "IconPath=assets/app-icon/pdfcraft.ico" `
+            -o dist/release/dpdf-1.0.0-windows-x64.msi
+
+      - name: Upload Windows Installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: dpdf-windows-installers
+          path: |
+            dist/release/dpdf-*.exe
+            dist/release/dpdf-*.msi
