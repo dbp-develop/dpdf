@@ -3,23 +3,37 @@
      Full UI gets welcome (with the desktop-shortcut and PDF context-menu checkboxes)/progress/outcome screens; /qn and /qb stay unattended. -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <Fragment>
-    <UI Id="PdfcraftInstallerUI">
+    <UI Id="DpdfInstallerUI">
       <TextStyle Id="InstallerNormal" FaceName="Segoe UI" Size="9" />
       <TextStyle Id="InstallerTitle" FaceName="Segoe UI" Size="12" Bold="yes" />
       <Property Id="DefaultUIFont" Value="InstallerNormal" />
 
-      <Dialog Id="InstallWelcome" Width="370" Height="180" Title="[ProductName] Setup">
-        <Control Id="Title" Type="Text" X="20" Y="20" Width="330" Height="25" Text="{\InstallerTitle}Install [ProductName]" />
-        <Control Id="Description" Type="Text" X="20" Y="55" Width="330" Height="40"
-            Text="Setup will install [ProductName] for all users and add it to the Start menu. Click Install to continue." />
-        <Control Id="DesktopShortcut" Type="CheckBox" X="20" Y="105" Width="330" Height="17"
-            Property="INSTALLDESKTOPSHORTCUT" CheckBoxValue="1" Text="Create a &amp;desktop shortcut" />
-        <Control Id="PdfContextMenu" Type="CheckBox" X="20" Y="123" Width="330" Height="17"
-            Property="INSTALLPDFCONTEXTMENU" CheckBoxValue="1" Text="Add &quot;&amp;Edit with PdfCraft&quot; to the right-click menu of PDF files" />
-        <Control Id="Install" Type="PushButton" X="195" Y="145" Width="75" Height="23" Default="yes" ElevationShield="yes" Text="&amp;Install">
-          <Publish Event="EndDialog" Value="Return" />
+      <Dialog Id="InstallWelcome" Width="370" Height="220" Title="[ProductName] Setup">
+        <Control Id="Title" Type="Text" X="20" Y="15" Width="330" Height="25" Text="{\InstallerTitle}Install [ProductName]" />
+        <Control Id="Description" Type="Text" X="20" Y="42" Width="330" Height="25"
+            Text="Choose an installation type and click Install to continue." />
+
+        <Control Id="ScopeRadio" Type="RadioButtonGroup" Property="INSTALLSCOPE" X="20" Y="68" Width="330" Height="48">
+          <RadioButtonGroup Property="INSTALLSCOPE">
+            <RadioButton Value="perUser" X="0" Y="0" Width="330" Height="17"
+                Text="Install for &amp;just me (No administrator rights needed)" />
+            <RadioButton Value="perMachine" X="0" Y="22" Width="330" Height="17"
+                Text="Install for &amp;all users on this machine (Requires administrator approval)" />
+          </RadioButtonGroup>
         </Control>
-        <Control Id="Cancel" Type="PushButton" X="280" Y="145" Width="70" Height="23" Cancel="yes" Text="Cancel">
+
+        <Control Id="DesktopShortcut" Type="CheckBox" X="20" Y="122" Width="330" Height="17"
+            Property="INSTALLDESKTOPSHORTCUT" CheckBoxValue="1" Text="Create a &amp;desktop shortcut" />
+        <Control Id="PdfContextMenu" Type="CheckBox" X="20" Y="142" Width="330" Height="17"
+            Property="INSTALLPDFCONTEXTMENU" CheckBoxValue="1" Text="Add &quot;&amp;Edit with dpdf&quot; to the right-click menu of PDF files" />
+        <Control Id="Install" Type="PushButton" X="195" Y="178" Width="75" Height="23" Default="yes" Text="&amp;Install">
+          <Publish Property="MSIINSTALLPERUSER" Value="1" Condition="INSTALLSCOPE = &quot;perUser&quot;" Order="1" />
+          <Publish Property="ALLUSERS" Value="2" Condition="INSTALLSCOPE = &quot;perUser&quot;" Order="2" />
+          <Publish Property="MSIINSTALLPERUSER" Value="{}" Condition="INSTALLSCOPE = &quot;perMachine&quot;" Order="3" />
+          <Publish Property="ALLUSERS" Value="1" Condition="INSTALLSCOPE = &quot;perMachine&quot;" Order="4" />
+          <Publish Event="EndDialog" Value="Return" Order="5" />
+        </Control>
+        <Control Id="Cancel" Type="PushButton" X="280" Y="178" Width="70" Height="23" Cancel="yes" Text="Cancel">
           <Publish Event="EndDialog" Value="Exit" />
         </Control>
       </Dialog>
