@@ -1,12 +1,12 @@
 [package]
-name = "pdfcraft-cli"
-description = "PdfCraft command-line tool: inspect, render and robustness-check PDFs"
+name = "dpdf-cli"
+description = "dpdf command-line tool: inspect, render and robustness-check PDFs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
 
 [[bin]]
-name = "pdfcraft-cli"
+name = "dpdf-cli"
 path = "src/main.rs"
 
 [lints]

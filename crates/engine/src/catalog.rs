@@ -62,7 +62,7 @@ const fn menu_item(label: &'static str, icon: &'static str, actions: &'static [&
     ToolItem { label, icon, command, availability: Ready, actions }
 }
 
-use Availability::{Planned, Provider, Ready};
+use Availability::{Planned, Ready};
 
 const RED: [u8; 3] = [0xE0, 0x3E, 0x3E];
 const PURPLE: [u8; 3] = [0x8E, 0x4E, 0xE6];
@@ -509,38 +509,6 @@ pub static TOOL_GROUPS: &[ToolGroup] = &[
         badge: None,
         availability: Planned("M12"),
         sections: &[ToolSection { title: "Index", items: &[item("Manage embedded index", "file-search", "search.index", Planned("M12"))] }],
-    },
-    ToolGroup {
-        id: "javascript",
-        label: "Use JavaScript",
-        icon: "braces",
-        hue: BLUE,
-        badge: None,
-        availability: Planned("M6"),
-        sections: &[ToolSection {
-            title: "JavaScript",
-            items: &[
-                item("Console", "braces", "js.console", Planned("M6")),
-                item("Document JavaScripts", "file-text", "js.document", Planned("M6")),
-                item("Document actions", "list-checks", "js.actions", Planned("M6")),
-            ],
-        }],
-    },
-    ToolGroup {
-        id: "ai",
-        label: "AI assistant",
-        icon: "sparkles",
-        hue: PINK,
-        badge: Some("Optional"),
-        availability: Provider,
-        sections: &[ToolSection {
-            title: "Bring your own model (off by default)",
-            items: &[
-                item("Summarize", "sparkles", "ai.summary", Provider),
-                item("Ask about this document", "message-circle-reply", "ai.ask", Provider),
-                item("Translate", "languages", "ai.translate", Provider),
-            ],
-        }],
     },
 ];
 

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" width="100%" height="100%">
+  <defs>
+    <linearGradient id="markAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F43F5E"/>
+      <stop offset="100%" stop-color="#E11D48"/>
+    </linearGradient>
+    <linearGradient id="markDark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Left Icon Mark (120x120 scale) -->
+  <g transform="translate(20, 20)">
+    <!-- Document outline/body -->
+    <rect x="0" y="0" width="120" height="120" rx="28" fill="url(#markDark)"/>
+    
+    <!-- Document sheet -->
+    <path d="M 32 24 L 72 24 L 88 40 L 88 96 L 32 96 Z" fill="#F8FAFC"/>
+    <path d="M 72 24 L 72 40 L 88 40 Z" fill="#94A3B8"/>
+
+    <!-- 'd' symbol -->
+    <path d="M 68 36 L 76 36 L 76 82 L 68 82 Z" fill="url(#markAccent)"/>
+    <path d="M 70 56 A 14 14 0 1 0 70 82 Z" fill="url(#markAccent)"/>
+    <circle cx="61" cy="69" r="6" fill="#F8FAFC"/>
+  </g>
+
+  <!-- Typography: 'dpdf' -->
+  <g transform="translate(170, 102)" font-family="system-ui, -apple-system, 'Inter', 'Segoe UI', Roboto, sans-serif">
+    <!-- 'd' in accent color -->
+    <text x="0" y="0" font-size="76" font-weight="800" letter-spacing="-2" fill="#E11D48">d</text>
+    <!-- 'pdf' in dark slate (or pure white in dark context) -->
+    <text x="44" y="0" font-size="76" font-weight="700" letter-spacing="-1.5" fill="#0F172A">pdf</text>
+    
+    <!-- Subtitle -->
+    <text x="2" y="32" font-size="16" font-weight="600" letter-spacing="3" fill="#64748B">PDF WORKBENCH</text>
+  </g>
+</svg>
