@@ -671,6 +671,7 @@ impl PdfCraftApp {
             }
             "page.split" => self.dialog = Some(Dialog::Split),
             "help.shortcuts" => self.dialog = Some(Dialog::Shortcuts),
+            "help.check_updates" => self.check_for_updates(),
             "help.about" => self.dialog = Some(Dialog::About),
             _ => return false,
         }

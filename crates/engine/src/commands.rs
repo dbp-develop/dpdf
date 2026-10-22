@@ -371,6 +371,7 @@ pub const COMMANDS: &[CommandSpec] = &[
     c("page.split", "Split document…", PAGES, None, Assembly, "scissors"),
     c("page.number", "Number pages…", PAGES, None, Assembly, "hash"),
     c("help.shortcuts", "Keyboard shortcuts", HELP, None, Nothing, "circle-help"),
+    c("help.check_updates", "Check for updates…", HELP, None, Nothing, "cloud"),
     c("help.about", "About dpdf", HELP, None, Nothing, "info"),
 ];
 

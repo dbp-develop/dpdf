@@ -490,6 +490,22 @@ pub(crate) fn preferences_body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tok
                 .color(t.text_muted),
         );
     });
+    ui.add_space(8.0);
+    ui.label(egui::RichText::new(tl!("Updates")).font(theme::semibold(13.0)));
+    egui::Frame::new().fill(t.hover).corner_radius(egui::CornerRadius::same(6)).inner_margin(egui::Margin::same(10)).show(ui, |ui| {
+        ui.set_width(ui.available_width());
+        ui.horizontal(|ui| {
+            ui.label(egui::RichText::new(format!("dpdf {}", env!("CARGO_PKG_VERSION"))).color(t.text_muted));
+            if widgets::pill_button(ui, tl!("Check for updates"), false).clicked() {
+                app.check_for_updates();
+            }
+        });
+        ui.label(
+            egui::RichText::new(tl!("dpdf operates completely offline. Checking for updates connects to the internet only on your request."))
+                .small()
+                .color(t.text_muted),
+        );
+    });
     ui.add_space(10.0);
     buttons(ui, tl!("OK"), &[]).is_some()
 }

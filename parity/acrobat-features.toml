@@ -1766,8 +1766,8 @@ milestone = "M3"
 status = "partial"
 commands = ["help.check_updates"]
 tools = []
-evidence = ["crates/ui-egui/tests/ui_group/updates.rs::a_newer_release_is_offered_for_download", "crates/ui-egui/tests/ui_group/updates.rs::nothing_is_asked_until_the_user_checks", "apps/pdfcraft/src/updates.rs::answers_are_read_and_only_our_release_pages_are_offered"]
-notes = "asks GitHub Releases on request and offers the release page. By the owner's decision there is no check at start and no in-place install (Acrobat has both)"
+evidence = ["crates/ui-egui/tests/ui_group/updates.rs::a_newer_release_is_offered_for_download", "crates/ui-egui/tests/ui_group/updates.rs::nothing_is_asked_until_the_user_checks", "crates/ui-egui/tests/ui_group/updates.rs::user_can_cancel_update_consent_and_remain_offline", "apps/pdfcraft/src/updates.rs::answers_are_read_and_only_our_release_pages_are_offered", "apps/pdfcraft/src/updates.rs::platform_installer_asset_is_parsed_when_present"]
+notes = "asks GitHub Releases on request with explicit user consent and offers in-app download and update installer."
 
 [[feature]]
 id = "view.single-key-accelerators"
