@@ -4,7 +4,7 @@
 
 Every asset PdfCraft includes, bundles or uses to build its published material, with its author, source and licence. The policy is in [AGENTS.md](AGENTS.md) §1. The machine-readable list, with SHA-256 hashes, is [ATTRIBUTION.toml](ATTRIBUTION.toml). Licence texts are kept beside the assets and summarised in [NOTICE](NOTICE).
 
-## In this repository (272)
+## In this repository (273)
 
 | Asset | Title | Author | Licence | Source | Used for |
 |---|---|---|---|---|---|
@@ -235,6 +235,7 @@ Every asset PdfCraft includes, bundles or uses to build its published material, 
 | `assets/app-icon/pdfcraft-small.svg` | PdfCraft app icon (light vector) | PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py) | MIT OR Apache-2.0 | Contributor-original (see assets/app-icon/README.md) | README header and assets/app-icon/README.md |
 | `assets/app-icon/pdfcraft-1024.png` | PdfCraft app icon, 1024 px on Apple's icon grid | PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py) | MIT OR Apache-2.0 | Contributor-original (see assets/app-icon/README.md) | Runtime window/Dock icon on macOS (apps/pdfcraft/src/main.rs) |
 | `assets/app-icon/pdfcraft.icns` | PdfCraft app icon (macOS .icns) | PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py) | MIT OR Apache-2.0 | Contributor-original (see assets/app-icon/README.md) | macOS app bundle icon |
+| `assets/app-icon/dpdf.icns` | dpdf app icon (macOS .icns) | dpdf contributors | MIT OR Apache-2.0 | Contributor-original (see assets/app-icon/README.md) | macOS app bundle icon |
 | `assets/app-icon/pdfcraft.ico` | PdfCraft app icon (Windows .ico, 16-256 px) | PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py) | MIT OR Apache-2.0 | Contributor-original (see assets/app-icon/README.md) | Embedded in pdfcraft.exe by apps/pdfcraft/build.rs (Explorer, taskbar, Start menu, Alt-Tab) |
 | `assets/app-icon/pdfcraft-document.svg` | PdfCraft PDF document icon (master vector) | Lucide Icons and Contributors (document outline); PdfCraft contributors (PDF badge, lettering and composition) | ISC AND (MIT OR Apache-2.0) | https://github.com/lucide-icons/lucide (npm lucide-static 1.49.0, icons/file-text.svg); contributor-original composition (assets/app-icon/README.md) | Master artwork for the Windows PDF file type icon; rendered by packaging/icons.sh, without fonts or external images |
 | `assets/app-icon/pdfcraft-document.ico` | PdfCraft PDF document icon (Windows .ico, 16-256 px) | Lucide Icons and Contributors (document outline); PdfCraft contributors (PDF badge, lettering and composition) | ISC AND (MIT OR Apache-2.0) | https://github.com/lucide-icons/lucide (npm lucide-static 1.49.0, icons/file-text.svg); contributor-original composition (assets/app-icon/README.md) | Embedded in pdfcraft.exe as resource 2; the Windows installer uses it for PdfCraft.Document and Applications/pdfcraft.exe PDF file associations |

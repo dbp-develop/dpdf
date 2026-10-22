@@ -2844,6 +2844,17 @@ usage = "macOS app bundle icon"
 sha256 = "2425148222873de241d267aba667a8b234ecdd0149f2ca8bb6e79443b743b1e8"
 
 [[asset]]
+path = "assets/app-icon/dpdf.icns"
+title = "dpdf app icon (macOS .icns)"
+author = "dpdf contributors"
+source = "Contributor-original (see assets/app-icon/README.md)"
+licence = "MIT OR Apache-2.0"
+licence_file = "assets/app-icon/LICENSE.txt"
+kind = "icon"
+usage = "macOS app bundle icon"
+sha256 = "25cb97c734aee65de3fcc1989c2440e4f658968cc0a9479904a8d899c4653a3f"
+
+[[asset]]
 path = "assets/app-icon/pdfcraft.ico"
 title = "PdfCraft app icon (Windows .ico, 16-256 px)"
 author = "PdfCraft contributors (drawn by the project owner in ArtCraft; vectorised with craftrules vectorize_tile.py)"
