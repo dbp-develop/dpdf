@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>dpdf — Fast, Private, and Completely Offline PDF Workbench</title>
+  <meta name="description" content="A fast, native, and 100% offline PDF reader and editor written in pure Rust. View, organize, merge, split, annotate, and protect PDF documents with zero telemetry.">
+  
+  <!-- Open Graph / Social Media -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="dpdf — Fast, Private, Completely Offline PDF Workbench">
+  <meta property="og:description" content="Lightweight, zero-telemetry, pure native PDF workbench for Windows, macOS, and Linux. No accounts, no cloud uploads, instant startup.">
+  <meta property="og:image" content="assets/dpdf-1024.png">
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="assets/dpdf-icon.svg">
+  <link rel="icon" type="image/x-icon" href="assets/dpdf.ico">
+  <link rel="apple-touch-icon" href="assets/dpdf-1024.png">
+
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark-theme">
+
+  <!-- Background decorative glows -->
+  <div class="glow-bg glow-primary"></div>
+  <div class="glow-bg glow-secondary"></div>
+
+  <!-- Sticky Navbar -->
+  <header class="navbar-wrapper">
+    <div class="container navbar">
+      <a href="#" class="brand-logo" aria-label="dpdf home">
+        <img src="assets/dpdf-icon.svg" alt="dpdf mark" width="34" height="34" class="logo-mark">
+        <span class="logo-text">dpdf</span>
+        <span class="version-tag">v1.0.0</span>
+      </a>
+
+      <nav class="nav-links">
+        <a href="#features">Features</a>
+        <a href="#privacy">Privacy</a>
+        <a href="#comparison">Comparison</a>
+        <a href="#downloads">Downloads</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <div class="nav-actions">
+        <a href="https://github.com/dbp-develop/dpdf" target="_blank" rel="noopener noreferrer" class="btn btn-ghost" title="View Source on GitHub">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+          </svg>
+          <span class="desktop-only">GitHub</span>
+        </a>
+        <a href="#downloads" class="btn btn-primary nav-download-btn">
+          <span>Download</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container hero-content">
+      <div class="badge-pill">
+        <span class="badge-dot"></span>
+        <span>100% Offline by Default · No Cloud Telemetry · v1.0.0 Release</span>
+      </div>
+
+      <h1 class="hero-title">
+        The Fast, Private, Native<br>
+        <span class="text-gradient">PDF Workbench.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Engineered in pure Rust with hardware-accelerated rendering. View, organize, split, merge, fill, sign, and encrypt PDFs without subscriptions, background services, or cloud surveillance.
+      </p>
+
+      <!-- Smart Detected Download CTA -->
+      <div class="hero-cta-container">
+        <div class="primary-download-group">
+          <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-setup.exe" id="main-download-btn" class="btn btn-hero btn-primary">
+            <div class="btn-icon-wrapper" id="btn-os-icon">
+              <!-- Default Windows icon -->
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
+              </svg>
+            </div>
+            <div class="btn-text-wrapper">
+              <span class="btn-subtext">Free Download for</span>
+              <span class="btn-maintext" id="btn-os-label">Windows (64-bit .exe)</span>
+            </div>
+            <svg class="btn-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </a>
+
+          <!-- Quick platform picker dropdown toggle -->
+          <button class="btn btn-hero-dropdown" id="platform-menu-toggle" aria-label="Choose other platform" aria-expanded="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+
+          <!-- Dropdown menu -->
+          <div class="platform-dropdown-menu" id="platform-dropdown">
+            <div class="dropdown-header">Windows (64-bit)</div>
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-setup.exe" class="dropdown-item">
+              <span class="item-title">Setup Installer (.exe)</span>
+              <span class="item-desc">User & Machine UAC options · 23 MB</span>
+            </a>
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-windows-x64.msi" class="dropdown-item">
+              <span class="item-title">WiX Enterprise Package (.msi)</span>
+              <span class="item-desc">Enterprise deployment & associations · 32 MB</span>
+            </a>
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-windows-x64-portable.zip" class="dropdown-item">
+              <span class="item-title">Portable Edition (.zip)</span>
+              <span class="item-desc">Zero-install standalone (USB ready) · 42 MB</span>
+            </a>
+
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-header">macOS (Universal)</div>
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-macos-universal.dmg" class="dropdown-item">
+              <span class="item-title">Apple Silicon & Intel (.dmg)</span>
+              <span class="item-desc">Drag to Applications disk image · 54 MB</span>
+            </a>
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-macos-universal.zip" class="dropdown-item">
+              <span class="item-title">macOS App Archive (.zip)</span>
+              <span class="item-desc">Universal dpdf.app bundle · 49 MB</span>
+            </a>
+
+            <div class="dropdown-divider"></div>
+            <div class="dropdown-header">Linux & Automation</div>
+            <a href="https://github.com/dbp-develop/dpdf/releases/latest" class="dropdown-item">
+              <span class="item-title">Linux Releases & Source</span>
+              <span class="item-desc">Tarball, AppImage, and source packages</span>
+            </a>
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-cli-1.0.0-macos-universal.zip" class="dropdown-item">
+              <span class="item-title">Headless CLI (dpdf-cli)</span>
+              <span class="item-desc">For batch scripts, CI/CD, and terminals</span>
+            </a>
+          </div>
+        </div>
+
+        <a href="#downloads" class="btn btn-secondary">
+          <span>All Platforms & Formats</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <polyline points="19 12 12 19 5 12"></polyline>
+          </svg>
+        </a>
+      </div>
+
+      <div class="hero-trust-bar">
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>100% Offline Guarantee</span>
+        </div>
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Zero Telemetry / No Pings</span>
+        </div>
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>Free & Open Source</span>
+        </div>
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span>No Account or Sign-up</span>
+        </div>
+      </div>
+
+      <!-- App Mockup Preview -->
+      <div class="hero-window-mockup">
+        <div class="window-chrome">
+          <div class="window-controls">
+            <span class="control-dot close"></span>
+            <span class="control-dot minimize"></span>
+            <span class="control-dot maximize"></span>
+          </div>
+          <div class="window-tabs">
+            <div class="window-tab active">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span>Investment_Agreement_2026.pdf</span>
+            </div>
+            <div class="window-tab">
+              <span>Financial_Audit.pdf</span>
+            </div>
+          </div>
+          <div class="window-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--color-emerald)" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Sandbox Mode (Offline)</span>
+          </div>
+        </div>
+
+        <div class="window-viewport">
+          <img src="assets/pdfcraft-dark.png" id="preview-img" alt="dpdf desktop application preview" loading="eager">
+        </div>
+
+        <!-- Interactive preview switchers -->
+        <div class="preview-tabs">
+          <button class="preview-tab active" data-src="assets/pdfcraft-dark.png">Dark Mode Reader</button>
+          <button class="preview-tab" data-src="assets/pdfcraft-organize.png">Page Organizer Grid</button>
+          <button class="preview-tab" data-src="assets/pdfcraft-viewer.png">Two-Page Spread</button>
+          <button class="preview-tab" data-src="assets/pdfcraft-forms.png">Fill & Sign</button>
+          <button class="preview-tab" data-src="assets/pdfcraft-split.png">Split & Merge</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Core Pillars Grid -->
+  <section class="section pillars-section" id="privacy">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Built for Those Who Value <span class="text-gradient">Privacy & Performance</span></h2>
+        <p class="section-subtitle">Most PDF tools today either force recurring cloud subscriptions or upload your confidential files to remote servers. dpdf takes the opposite path.</p>
+      </div>
+
+      <div class="pillars-grid">
+        <div class="pillar-card">
+          <div class="pillar-icon-box">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+          </div>
+          <h3 class="pillar-title">100% Offline by Default</h3>
+          <p class="pillar-desc">
+            dpdf makes zero background calls, transmits zero telemetry, and doesn't ping servers on startup. Any update check requires your explicit, interactive consent first.
+          </p>
+        </div>
+
+        <div class="pillar-card">
+          <div class="pillar-icon-box">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+          <h3 class="pillar-title">Native Rust Performance</h3>
+          <p class="pillar-desc">
+            No bloated Electron wrappers. Built natively in 100% safe Rust with GPU hardware-acceleration (wgpu/Vulkan/Metal/DirectX). Starts in milliseconds and handles gigabyte PDFs with ease.
+          </p>
+        </div>
+
+        <div class="pillar-card">
+          <div class="pillar-icon-box">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/>
+              <polyline points="7 3 7 8 15 8"/>
+            </svg>
+          </div>
+          <h3 class="pillar-title">Fearless Atomic Saves</h3>
+          <p class="pillar-desc">
+            Never worry about corrupted files. Edits are appended atomically to preserve original binary streams. Deep undo/redo stacks allow you to step back through any sequence of operations.
+          </p>
+        </div>
+
+        <div class="pillar-card">
+          <div class="pillar-icon-box">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+              <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+              <line x1="6" y1="6" x2="6.01" y2="6"/>
+              <line x1="6" y1="18" x2="6.01" y2="18"/>
+            </svg>
+          </div>
+          <h3 class="pillar-title">Portable & Dual-Scope</h3>
+          <p class="pillar-desc">
+            Install without administrative privileges into user profile, deploy system-wide via Enterprise WiX MSI, or run the Portable Edition directly from a flash drive with zero registry footprint.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Feature Showcase -->
+  <section class="section features-section" id="features">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">All The Essential Tools, <span class="text-gradient">Zero Distraction</span></h2>
+        <p class="section-subtitle">Everything you need for everyday and professional PDF document handling.</p>
+      </div>
+
+      <div class="feature-rows">
+        <!-- Feature 1 -->
+        <div class="feature-row">
+          <div class="feature-info">
+            <span class="feature-tag">Organize & Rearrange</span>
+            <h3 class="feature-heading">Visual Thumbnail Grid with Drag & Drop</h3>
+            <p class="feature-text">
+              Reorder pages visually. Rotate pages by 90-degree increments, delete unwanted sheets, extract custom ranges, and drop in additional PDFs to combine on the fly.
+            </p>
+            <ul class="feature-checklist">
+              <li>Batch page rotations and deletions</li>
+              <li>Reorder with smooth live drag gestures</li>
+              <li>Insert pages from external PDF documents</li>
+            </ul>
+          </div>
+          <div class="feature-media">
+            <img src="assets/pdfcraft-organize.png" alt="dpdf organize pages tool" loading="lazy">
+          </div>
+        </div>
+
+        <!-- Feature 2 -->
+        <div class="feature-row reverse">
+          <div class="feature-info">
+            <span class="feature-tag">Forms & Markup</span>
+            <h3 class="feature-heading">Fill, Sign & Annotate with Ease</h3>
+            <p class="feature-text">
+              Interact with standard AcroForm text fields, checkboxes, and radio buttons. Add highlights, strikethroughs, shapes, and fill & sign dates with clean typography.
+            </p>
+            <ul class="feature-checklist">
+              <li>Interactive form field calculation and validation</li>
+              <li>Western European cursive signature stamping</li>
+              <li>Highlight, underline, and strikeout text markup</li>
+            </ul>
+          </div>
+          <div class="feature-media">
+            <img src="assets/pdfcraft-forms.png" alt="dpdf form filling and annotation" loading="lazy">
+          </div>
+        </div>
+
+        <!-- Feature 3 -->
+        <div class="feature-row">
+          <div class="feature-info">
+            <span class="feature-tag">Document Assembly</span>
+            <h3 class="feature-heading">Combine, Split & Protect with Security</h3>
+            <p class="feature-text">
+              Merge dozens of PDFs while retaining their outline bookmark hierarchies. Split giant documents by size or page counts. Add standard AES-128 or AES-256 password encryption with permission locks.
+            </p>
+            <ul class="feature-checklist">
+              <li>Retains embedded bookmarks and outline hierarchies</li>
+              <li>Split by page count, bookmarks, or chapter ranges</li>
+              <li>AES-256 and RC4 encryption with permission controls</li>
+            </ul>
+          </div>
+          <div class="feature-media">
+            <img src="assets/pdfcraft-split.png" alt="dpdf split and combine PDFs" loading="lazy">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Head-to-Head Comparison -->
+  <section class="section comparison-section" id="comparison">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">How dpdf <span class="text-gradient">Compares</span></h2>
+        <p class="section-subtitle">See how dpdf measures up against traditional proprietary giants and cloud-based converters.</p>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="comparison-table">
+          <thead>
+            <tr>
+              <th class="table-col-feature">Feature / Attribute</th>
+              <th class="table-col-dpdf highlight">dpdf (v1.0.0)</th>
+              <th class="table-col-other">Adobe Acrobat Pro</th>
+              <th class="table-col-other">Cloud Tools (Smallpdf, ILovePDF)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="feature-name">Data Privacy</td>
+              <td class="table-cell-check highlight"><strong>100% Local (Never leaves device)</strong></td>
+              <td class="table-cell-cross">Cloud synced / telemetry</td>
+              <td class="table-cell-cross">Uploaded to remote cloud servers</td>
+            </tr>
+            <tr>
+              <td class="feature-name">Price & Licensing</td>
+              <td class="table-cell-check highlight"><strong>Free & Open Source</strong></td>
+              <td class="table-cell-cross">$240+ / year subscription</td>
+              <td class="table-cell-cross">Freemium paywalls & quotas</td>
+            </tr>
+            <tr>
+              <td class="feature-name">Account Requirement</td>
+              <td class="table-cell-check highlight"><strong>None (Open & use instantly)</strong></td>
+              <td class="table-cell-cross">Mandatory Adobe Creative Cloud ID</td>
+              <td class="table-cell-cross">Required for daily usage limits</td>
+            </tr>
+            <tr>
+              <td class="feature-name">Startup Speed</td>
+              <td class="table-cell-check highlight"><strong>&lt; 100 ms (Native Rust)</strong></td>
+              <td class="table-cell-cross">Slow (Multiple background daemons)</td>
+              <td class="table-cell-cross">Depends on upload speed & browser</td>
+            </tr>
+            <tr>
+              <td class="feature-name">File Size Limit</td>
+              <td class="table-cell-check highlight"><strong>Unlimited (Host RAM bound)</strong></td>
+              <td class="table-cell-check">High</td>
+              <td class="table-cell-cross">Capped (typically 15–50 MB)</td>
+            </tr>
+            <tr>
+              <td class="feature-name">Offline Capability</td>
+              <td class="table-cell-check highlight"><strong>Full functionality offline</strong></td>
+              <td class="table-cell-check">Partial (Requires periodic online ping)</td>
+              <td class="table-cell-cross">Zero offline functionality</td>
+            </tr>
+            <tr>
+              <td class="feature-name">Portable Mode (USB)</td>
+              <td class="table-cell-check highlight"><strong>Yes (Zero registry residue)</strong></td>
+              <td class="table-cell-cross">No</td>
+              <td class="table-cell-cross">No</td>
+            </tr>
+            <tr>
+              <td class="feature-name">Headless CLI Automation</td>
+              <td class="table-cell-check highlight"><strong>Included (dpdf-cli)</strong></td>
+              <td class="table-cell-cross">Enterprise Add-on / SDK</td>
+              <td class="table-cell-cross">Paid REST API only</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Direct Downloads Section -->
+  <section class="section downloads-section" id="downloads">
+    <div class="container">
+      <div class="section-header">
+        <h2 class="section-title">Download <span class="text-gradient">dpdf v1.0.0</span></h2>
+        <p class="section-subtitle">Pick the format that fits your operating system. Free, direct download links with no installer bloat.</p>
+      </div>
+
+      <div class="download-cards-grid">
+        <!-- Windows Card -->
+        <div class="download-card">
+          <div class="card-os-header">
+            <svg class="os-icon" width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.9-1.801"/>
+            </svg>
+            <div>
+              <h3 class="card-os-name">Windows</h3>
+              <span class="card-os-sub">Windows 10, 11 (64-bit)</span>
+            </div>
+          </div>
+
+          <div class="download-options-list">
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-setup.exe" class="download-link-row primary-link">
+              <div class="link-meta">
+                <span class="link-name">Setup Installer (.exe)</span>
+                <span class="link-tag">Recommended · User or Machine</span>
+              </div>
+              <span class="link-size">23 MB</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </a>
+
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-windows-x64.msi" class="download-link-row">
+              <div class="link-meta">
+                <span class="link-name">WiX Enterprise MSI (.msi)</span>
+                <span class="link-tag">Enterprise rollout & GPO</span>
+              </div>
+              <span class="link-size">32 MB</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </a>
+
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-windows-x64-portable.zip" class="download-link-row">
+              <div class="link-meta">
+                <span class="link-name">Portable Edition (.zip)</span>
+                <span class="link-tag">No install needed · USB ready</span>
+              </div>
+              <span class="link-size">42 MB</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- macOS Card -->
+        <div class="download-card">
+          <div class="card-os-header">
+            <svg class="os-icon" width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.85-.9.04-2 .6-2.63 1.34-.55.63-.99 1.68-.86 2.7 1 .08 1.96-.44 2.57-1.19z"/>
+            </svg>
+            <div>
+              <h3 class="card-os-name">macOS</h3>
+              <span class="card-os-sub">macOS 11+ (Big Sur to Sequoia)</span>
+            </div>
+          </div>
+
+          <div class="download-options-list">
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-macos-universal.dmg" class="download-link-row primary-link">
+              <div class="link-meta">
+                <span class="link-name">Universal Disk Image (.dmg)</span>
+                <span class="link-tag">Apple Silicon (M1–M4) & Intel</span>
+              </div>
+              <span class="link-size">54 MB</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </a>
+
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-macos-universal.zip" class="download-link-row">
+              <div class="link-meta">
+                <span class="link-name">Application Archive (.zip)</span>
+                <span class="link-tag">dpdf.app standalone</span>
+              </div>
+              <span class="link-size">49 MB</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </a>
+
+            <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-cli-1.0.0-macos-universal.zip" class="download-link-row">
+              <div class="link-meta">
+                <span class="link-name">macOS Headless CLI (.zip)</span>
+                <span class="link-tag">Terminal automation binary</span>
+              </div>
+              <span class="link-size">29 MB</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Linux Card -->
+        <div class="download-card">
+          <div class="card-os-header">
+            <svg class="os-icon" width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12.012 0c-3.13 0-5.672 2.542-5.672 5.672 0 1.077.307 2.083.84 2.941C6.273 9.429 5.5 10.871 5.5 12.5c0 1.258.463 2.41 1.229 3.3-.23.51-.36 1.079-.36 1.68 0 2.21 1.79 4 4 4 .26 0 .51-.03.76-.08.64.38 1.39.6 2.19.6s1.55-.22 2.19-.6c.25.05.5.08.76.08 2.21 0 4-1.79 4-4 0-.601-.13-1.17-.36-1.68.766-.89 1.229-2.042 1.229-3.3 0-1.629-.773-3.071-1.68-3.887.533-.858.84-1.864.84-2.941 0-3.13-2.542-5.672-5.672-5.672z"/>
+            </svg>
+            <div>
+              <h3 class="card-os-name">Linux & BSD</h3>
+              <span class="card-os-sub">x86_64, aarch64</span>
+            </div>
+          </div>
+
+          <div class="download-options-list">
+            <a href="https://github.com/dbp-develop/dpdf/releases/latest" class="download-link-row primary-link">
+              <div class="link-meta">
+                <span class="link-name">GitHub Releases Page</span>
+                <span class="link-tag">All Linux packages & archives</span>
+              </div>
+              <span class="link-size">Releases</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </a>
+
+            <div class="code-snippet-box">
+              <span class="snippet-label">Build from source with Cargo:</span>
+              <code>git clone https://github.com/dbp-develop/dpdf.git<br>cd dpdf && cargo build --release</code>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ Accordion -->
+  <section class="section faq-section" id="faq">
+    <div class="container faq-container">
+      <div class="section-header">
+        <h2 class="section-title">Frequently Asked <span class="text-gradient">Questions</span></h2>
+      </div>
+
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Is dpdf really 100% offline? How can I be certain?</span>
+            <svg class="faq-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Yes, completely. dpdf runs in an isolated local sandbox with zero network telemetry or tracking. The "Check for updates" feature never connects automatically: clicking it first displays an explicit consent warning dialog with Agree and Cancel options. If cancelled, zero network packets are sent.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>Can I use dpdf commercially or at my company?</span>
+            <svg class="faq-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Yes. dpdf is released under the permissive open-source MIT OR Apache-2.0 licenses. You can use it freely for personal, professional, and enterprise business purposes. For IT administrators, our dual-scope WiX MSI package supports silent installation and Group Policy Object (GPO) deployment.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>What is the Portable version and when should I use it?</span>
+            <svg class="faq-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>The Portable Edition is a self-contained ZIP archive that requires no installation and no administrator rights. You can extract it to any folder or run it directly from a USB flash drive. In portable mode, dpdf stores all configuration in a local <code>dpdfData</code> subfolder, leaving zero trace in the Windows Registry.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question">
+            <span>How does in-app updating work?</span>
+            <svg class="faq-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+          <div class="faq-answer">
+            <p>Under <strong>Preferences ▸ Updates</strong> or <strong>Help ▸ Check for updates…</strong>, you can trigger an update check. Once you confirm the privacy dialog, dpdf securely queries GitHub Releases for updates, displays an in-app download progress bar, and provides a 1-click "Install & Restart" button to seamlessly update the entire application.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Banner -->
+  <section class="section cta-section">
+    <div class="container cta-box">
+      <h2 class="cta-title">Ready for a faster, private PDF experience?</h2>
+      <p class="cta-subtitle">Download dpdf today. No trial periods, no subscriptions, and no cloud uploads.</p>
+      <div class="cta-actions">
+        <a href="#downloads" class="btn btn-hero btn-primary">
+          <span>Download dpdf v1.0.0</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </a>
+        <a href="https://github.com/dbp-develop/dpdf" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+          <span>Star on GitHub ⭐</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container footer-content">
+      <div class="footer-brand">
+        <a href="#" class="brand-logo">
+          <img src="assets/dpdf-icon.svg" alt="dpdf" width="28" height="28">
+          <span class="logo-text">dpdf</span>
+        </a>
+        <p class="footer-desc">The fast, native, and completely offline PDF workbench. Built with Rust.</p>
+      </div>
+
+      <div class="footer-links-group">
+        <div class="footer-col">
+          <h4>Downloads</h4>
+          <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-setup.exe">Windows Setup (.exe)</a>
+          <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-windows-x64.msi">Windows MSI (.msi)</a>
+          <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-windows-x64-portable.zip">Windows Portable (.zip)</a>
+          <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-macos-universal.dmg">macOS Universal (.dmg)</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Project</h4>
+          <a href="https://github.com/dbp-develop/dpdf" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
+          <a href="https://github.com/dbp-develop/dpdf/releases/tag/v1.0.0" target="_blank" rel="noopener noreferrer">Release Notes (v1.0.0)</a>
+          <a href="https://github.com/dbp-develop/dpdf/blob/main/CHANGELOG.md" target="_blank" rel="noopener noreferrer">Changelog</a>
+          <a href="https://github.com/dbp-develop/dpdf/blob/main/LICENSE-MIT" target="_blank" rel="noopener noreferrer">MIT License</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="container footer-bottom">
+      <p>© 2026 dpdf contributors. Licensed under MIT OR Apache-2.0.</p>
+      <p class="footer-offline-note">🔒 Zero analytics, tracking cookies, or network telemetry on this website.</p>
+    </div>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>
