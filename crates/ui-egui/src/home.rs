@@ -28,7 +28,36 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                     .color(t.text_muted)
                     .font(theme::regular(14.0)),
             );
-            ui.add_space(20.0);
+            ui.add_space(14.0);
+
+            egui::Frame::NONE
+                .fill(t.card)
+                .stroke(Stroke::new(1.0, t.border))
+                .corner_radius(CornerRadius::same(10))
+                .inner_margin(egui::Margin::symmetric(14, 10))
+                .show(ui, |ui| {
+                    ui.set_width(ui.available_width());
+                    ui.horizontal_wrapped(|ui| {
+                        icons::paint(ui, Rect::from_min_size(ui.cursor().min + vec2(0.0, 3.0), vec2(16.0, 16.0)), "globe", 16.0, t.accent);
+                        ui.add_space(20.0);
+                        ui.label(egui::RichText::new(tl!("Direct downloads:")).font(theme::semibold(13.0)));
+                        ui.add_space(4.0);
+
+                        for (label, url) in [
+                            ("Windows .exe", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-setup.exe"),
+                            ("Windows .msi", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-windows-x64.msi"),
+                            ("Windows Portable", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-windows-x64-portable.zip"),
+                            ("macOS .dmg", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-macos-universal.dmg"),
+                            ("macOS .zip", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-macos-universal.zip"),
+                            ("Linux Versions", "https://github.com/dbp-develop/dpdf/releases/latest"),
+                        ] {
+                            if widgets::pill_button(ui, tl!(label), false).clicked() {
+                                app.open_url(url);
+                            }
+                        }
+                    });
+                });
+            ui.add_space(16.0);
 
             egui::Frame::NONE
                 .fill(t.card)

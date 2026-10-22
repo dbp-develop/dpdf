@@ -29,6 +29,7 @@ This is the initial baseline release of **dpdf**, establishing the modern founda
   - One-click "Install & Restart" to automatically launch the installer and update the entire application.
   - Placed away from distraction in **Preferences ▸ Updates** and **Help ▸ Check for updates…**.
 - **Automated CI/CD Workflows**: Multi-platform build and release workflows for Windows and macOS.
+- **Direct Download Hub**: Direct platform download buttons on the repository home page and in-app Home tab for Windows (.exe, .msi, portable .zip), macOS (.dmg, .zip), and Linux.
 
 ### Changed
 - Standardized package versions and workspace dependencies to base version `1.0.0`.
