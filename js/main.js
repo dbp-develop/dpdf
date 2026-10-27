@@ -27,7 +27,7 @@ function initPlatformDetection() {
   const isLinux = /Linux/i.test(platform) && !/Android/i.test(ua);
 
   if (isMac) {
-    mainBtn.href = 'https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-macos-universal.dmg';
+    mainBtn.href = 'https://github.com/dbp-develop/dpdf/releases/download/v1.0.1/dpdf-1.0.1-macos-universal.dmg';
     osLabel.textContent = 'macOS (Universal .dmg)';
     osIcon.innerHTML = `
       <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
