@@ -23,11 +23,7 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
     egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
         egui::Frame::NONE.inner_margin(egui::Margin { left: 36, right: 36, top: 28, bottom: 28 }).show(ui, |ui| {
             ui.label(egui::RichText::new("Welcome to dpdf").font(theme::semibold(24.0)));
-            ui.label(
-                egui::RichText::new("A fast, local, and completely offline PDF workbench.")
-                    .color(t.text_muted)
-                    .font(theme::regular(14.0)),
-            );
+            ui.label(egui::RichText::new("A fast, local, and completely offline PDF workbench.").color(t.text_muted).font(theme::regular(14.0)));
             ui.add_space(14.0);
 
             egui::Frame::NONE
@@ -44,11 +40,11 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                         ui.add_space(4.0);
 
                         for (label, url) in [
-                            ("Windows .exe", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-setup.exe"),
-                            ("Windows .msi", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-windows-x64.msi"),
-                            ("Windows Portable", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-windows-x64-portable.zip"),
-                            ("macOS .dmg", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-macos-universal.dmg"),
-                            ("macOS .zip", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.0/dpdf-1.0.0-macos-universal.zip"),
+                            ("Windows .exe", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.1/dpdf-1.0.1-setup.exe"),
+                            ("Windows .msi", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.1/dpdf-1.0.1-windows-x64.msi"),
+                            ("Windows Portable", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.1/dpdf-1.0.1-windows-x64-portable.zip"),
+                            ("macOS .dmg", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.1/dpdf-1.0.1-macos-universal.dmg"),
+                            ("macOS .zip", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.1/dpdf-1.0.1-macos-universal.zip"),
                             ("Linux Versions", "https://github.com/dbp-develop/dpdf/releases/latest"),
                         ] {
                             if widgets::pill_button(ui, tl!(label), false).clicked() {
@@ -215,10 +211,7 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
             }
             ui.add_space(20.0);
             widgets::section_title(ui, tl!("Privacy"));
-            ui.label(
-                egui::RichText::new(tl!("dpdf works offline. No telemetry, no account, and no cloud processing."))
-                    .color(t.text_muted),
-            );
+            ui.label(egui::RichText::new(tl!("dpdf works offline. No telemetry, no account, and no cloud processing.")).color(t.text_muted));
         });
     });
 }

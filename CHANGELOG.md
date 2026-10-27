@@ -8,6 +8,17 @@ All versions follow the `v1.0.*` series.
 
 ---
 
+## [1.0.1] - 2026-10-27
+
+### Fixed
+- **Attachment Panel Autopopup**: Prevented the attachments right-hand panel from automatically popping open upon opening PDF documents (e.g., documents specifying `/PageMode /UseAttachments` or containing file-attachment annotations). This resolves an issue where the inspector panel occupied ~30% of screen real estate and obstructed document viewing upon launch. Attachments remain easily accessible on demand via the paperclip icon in the right-hand vertical menu rail.
+
+### Changed
+- Updated version metadata across workspace crates and build manifests to `1.0.1`.
+- Updated release packages, download links, and website download hubs for the `v1.0.1` release.
+
+---
+
 ## [1.0.0] - 2026-10-22 — Base Release
 
 This is the initial baseline release of **dpdf**, establishing the modern foundation for future updates.

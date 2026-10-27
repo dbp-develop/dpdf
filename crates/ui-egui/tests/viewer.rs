@@ -771,6 +771,26 @@ fn initial_view_is_edited_and_honoured_on_open() {
     assert_eq!((view.current, view.cover, app.right), (1, true, Some(pdfcraft_ui_egui::RightPanel::Bookmarks)));
 }
 
+#[test]
+fn attachments_initial_view_does_not_open_popup_on_open() {
+    use pdfcraft_engine::{Edit, Navigation};
+    let mut h = harness();
+    let id = h.state().views[h.state().active.unwrap()].id;
+    let mut v = h.state().session.get(id).unwrap().initial_view();
+    v.navigation = Navigation::Attachments;
+    h.state_mut().session.apply(id, Edit::SetInitialView(Box::new(v))).unwrap();
+    let bytes = h.state().session.save_bytes(id).unwrap();
+
+    let mut app = PdfCraftApp::new();
+    app.set_option("language", "en").unwrap();
+    app.open_bytes("attachments.pdf", None, bytes.to_vec()).unwrap();
+    assert_eq!(app.right, None, "attachment popup should not open automatically on open");
+
+    // The attachment panel can be opened from the right rail
+    app.choose_right_panel(Some(pdfcraft_ui_egui::RightPanel::Attachments));
+    assert_eq!(app.right, Some(pdfcraft_ui_egui::RightPanel::Attachments));
+}
+
 fn drag(h: &mut Harness<'static, PdfCraftApp>, a: egui::Pos2, b: egui::Pos2) {
     h.hover_at(a);
     h.run_steps(1);
@@ -830,7 +850,7 @@ fn tab_and_window_show_the_document_title_when_asked() {
     use pdfcraft_engine::Edit;
     let mut h = harness();
     h.run_steps(2);
-    assert_eq!(h.state().window_title, "b.pdf — PdfCraft");
+    assert_eq!(h.state().window_title, "b.pdf — dpdf");
     {
         let s = h.state_mut();
         let id = s.views[s.active.unwrap()].id;
@@ -840,7 +860,7 @@ fn tab_and_window_show_the_document_title_when_asked() {
         s.session.apply(id, Edit::SetInitialView(Box::new(v))).unwrap();
     }
     h.run_steps(2);
-    assert_eq!(h.state().window_title, "Quarterly report — PdfCraft");
+    assert_eq!(h.state().window_title, "Quarterly report — dpdf");
     h.get_by_label_contains("Quarterly report");
 }
 
@@ -859,7 +879,7 @@ fn a_placeholder_title_leaves_the_file_name_on_the_tab_and_window() {
         s.session.apply(id, Edit::SetInitialView(Box::new(v))).unwrap();
     }
     h.run_steps(2);
-    assert_eq!(h.state().window_title, "b.pdf — PdfCraft");
+    assert_eq!(h.state().window_title, "b.pdf — dpdf");
     assert!(h.query_by_label_contains("about:blank").is_none());
 }
 

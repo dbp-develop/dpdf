@@ -1164,18 +1164,12 @@ fn dialogs(app: &mut PdfCraftApp, ctx: &egui::Context) {
                         ui.add_space(6.0);
                         ui.label("A fast, private, offline PDF workbench written in pure Rust. MIT OR Apache-2.0.");
                         ui.label(
-                            egui::RichText::new(
-                                "Rendering: hayro · UI: egui · Icons: Lucide (ISC) · Fonts: Inter, JetBrains Mono (OFL)",
-                            )
-                            .color(t.text_muted)
-                            .small(),
-                        );
-                        ui.add_space(8.0);
-                        ui.label(
-                            egui::RichText::new("100% offline. Zero network connections, zero telemetry.")
-                                .color(t.text_faint)
+                            egui::RichText::new("Rendering: hayro · UI: egui · Icons: Lucide (ISC) · Fonts: Inter, JetBrains Mono (OFL)")
+                                .color(t.text_muted)
                                 .small(),
                         );
+                        ui.add_space(8.0);
+                        ui.label(egui::RichText::new("100% offline. Zero network connections, zero telemetry.").color(t.text_faint).small());
                     }
                 }
             }

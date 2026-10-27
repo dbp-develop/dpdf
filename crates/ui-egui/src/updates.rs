@@ -27,12 +27,7 @@ pub struct Release {
 
 impl Release {
     pub fn new(version: impl Into<String>, url: impl Into<String>) -> Self {
-        Self {
-            version: version.into(),
-            url: url.into(),
-            download_url: None,
-            file_name: None,
-        }
+        Self { version: version.into(), url: url.into(), download_url: None, file_name: None }
     }
 }
 
@@ -41,11 +36,8 @@ pub type UpdateSource = Arc<dyn Fn() -> Result<Release, String> + Send + Sync>;
 
 /// Downloads the release asset to a file (blocking; runs on its own thread).
 /// Takes (download_url, file_name, progress_bytes, total_bytes).
-pub type UpdateDownloader = Arc<
-    dyn Fn(&str, &str, Arc<std::sync::atomic::AtomicU64>, Arc<std::sync::atomic::AtomicU64>) -> Result<std::path::PathBuf, String>
-        + Send
-        + Sync,
->;
+pub type UpdateDownloader =
+    Arc<dyn Fn(&str, &str, Arc<std::sync::atomic::AtomicU64>, Arc<std::sync::atomic::AtomicU64>) -> Result<std::path::PathBuf, String> + Send + Sync>;
 
 /// Launches the installer for an in-app update.
 pub type InstallerLauncher = Arc<dyn Fn(&std::path::Path) -> Result<(), String> + Send + Sync>;
@@ -265,11 +257,7 @@ pub(crate) fn dialog(app: &mut PdfCraftApp, ctx: &egui::Context) {
                 let fraction = if tot > 0 { (p as f32 / tot as f32).clamp(0.0, 1.0) } else { 0.0 };
                 let mb_p = p as f64 / 1_048_576.0;
                 let mb_tot = tot as f64 / 1_048_576.0;
-                let text = if tot > 0 {
-                    format!("{mb_p:.1} MB / {mb_tot:.1} MB ({:.0}%)", fraction * 100.0)
-                } else {
-                    format!("{mb_p:.1} MB")
-                };
+                let text = if tot > 0 { format!("{mb_p:.1} MB / {mb_tot:.1} MB ({:.0}%)", fraction * 100.0) } else { format!("{mb_p:.1} MB") };
                 ui.add(egui::ProgressBar::new(fraction).text(text).animate(true));
                 ui.add_space(12.0);
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
@@ -283,10 +271,7 @@ pub(crate) fn dialog(app: &mut PdfCraftApp, ctx: &egui::Context) {
             (_, DownloadState::Done(path)) => {
                 ui.label(egui::RichText::new(tl!("Update downloaded and ready to install.")).strong());
                 ui.add_space(4.0);
-                ui.label(
-                    egui::RichText::new(tl!("dpdf will close and launch the installer to update the entire application."))
-                        .color(t.text_muted),
-                );
+                ui.label(egui::RichText::new(tl!("dpdf will close and launch the installer to update the entire application.")).color(t.text_muted));
                 ui.add_space(12.0);
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                     if widgets::pill_button(ui, tl!("Install & Restart"), true).clicked() {

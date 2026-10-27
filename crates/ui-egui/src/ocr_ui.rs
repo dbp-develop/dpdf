@@ -125,9 +125,11 @@ pub(crate) fn body(ui: &mut egui::Ui, app: &mut PdfCraftApp, t: &Tokens) -> (boo
     });
     if !available {
         ui.label(
-            egui::RichText::new(tl!("Text recognition isn't installed: its model files are missing. Reinstall dpdf, or set DPDF_MODELS to the folder that holds them."))
-                .small()
-                .color(t.text_muted),
+            egui::RichText::new(tl!(
+                "Text recognition isn't installed: its model files are missing. Reinstall dpdf, or set DPDF_MODELS to the folder that holds them."
+            ))
+            .small()
+            .color(t.text_muted),
         );
         ui.add_space(6.0);
     }

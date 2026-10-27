@@ -1105,7 +1105,7 @@ impl PdfCraftApp {
                 N::PageOnly => {}
                 N::Bookmarks => self.right = Some(RightPanel::Bookmarks),
                 N::Pages => self.right = Some(RightPanel::Pages),
-                N::Attachments => self.right = Some(RightPanel::Attachments),
+                N::Attachments => self.right = None,
                 N::Layers => self.right = Some(RightPanel::Layers),
             }
         }
@@ -1335,7 +1335,7 @@ impl PdfCraftApp {
         // the user closed stays closed (#1590).
         let opening_mode = self.mode_override.unwrap_or(self.default_mode);
         if activate && self.right.is_none() && !self.right_panel_closed && opening_mode != Mode::Read {
-            self.right = if !doc.info.annotations.is_empty() {
+            self.right = if doc.info.annotations.iter().any(|a| a.subtype != "FileAttachment") {
                 Some(RightPanel::Comments)
             } else if !doc.info.outline.is_empty() {
                 Some(RightPanel::Bookmarks)

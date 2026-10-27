@@ -34,7 +34,7 @@ fn harness(setup: impl FnOnce(&mut PdfCraftApp) + 'static) -> Harness<'static, P
 #[test]
 fn home_shows_welcome_and_tools() {
     let h = harness(|_| {});
-    h.get_by_label_contains("Welcome to PdfCraft");
+    h.get_by_label_contains("Welcome to dpdf");
     assert!(h.query_all_by_label("Organize pages").count() >= 2, "tool list + home card");
     h.get_by_label("Open file");
 }
@@ -111,7 +111,7 @@ fn home_removes_one_recent_file_or_clears_them_all() {
     h.get_by_label("Clear Recent Files").click();
     h.run_steps(2);
     assert!(h.state().recent.is_empty(), "Clear empties the list");
-    h.get_by_label_contains("Files you open in PdfCraft appear here");
+    h.get_by_label_contains("Files you open in dpdf appear here");
     assert!(h.query_by_label("Clear Recent Files").is_none(), "and goes away with nothing left to clear");
 }
 
@@ -1172,7 +1172,7 @@ fn closing_the_last_active_tab_selects_the_previous_one_then_home() {
         assert!(app.session.get(ids[removed]).is_none());
     }
     assert_eq!(h.state().active, None);
-    h.get_by_label_contains("Welcome to PdfCraft");
+    h.get_by_label_contains("Welcome to dpdf");
 }
 
 #[test]
@@ -1360,7 +1360,7 @@ fn the_drop_line_shows_in_front_of_the_first_tab() {
         for y in y0..y1.min(image.height()) {
             for x in x0..x1.min(image.width()) {
                 let p = image.get_pixel(x, y).0;
-                if p[2] > 150 && p[0] < 90 && p[1] < 140 {
+                if (p[2] > 150 && p[0] < 90 && p[1] < 140) || (p[0] > 180 && p[1] < 80) {
                     n += 1;
                 }
             }

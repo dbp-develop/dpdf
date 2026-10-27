@@ -38,12 +38,7 @@ pub fn latest_release() -> Result<Release, String> {
 }
 
 /// Downloads the release asset to a temporary directory while reporting byte progress.
-pub fn download_update(
-    url: &str,
-    file_name: &str,
-    progress: Arc<AtomicU64>,
-    total: Arc<AtomicU64>,
-) -> Result<std::path::PathBuf, String> {
+pub fn download_update(url: &str, file_name: &str, progress: Arc<AtomicU64>, total: Arc<AtomicU64>) -> Result<std::path::PathBuf, String> {
     if !url.starts_with("https://github.com/dbp-develop/dpdf/releases/download/") {
         return Err("untrusted download source".into());
     }
@@ -57,12 +52,7 @@ pub fn download_update(
     if !(200..300).contains(&status) {
         return Err(format!("download failed (http status: {status})"));
     }
-    let content_len = response
-        .headers()
-        .get("content-length")
-        .and_then(|v| v.to_str().ok())
-        .and_then(|v| v.parse::<u64>().ok())
-        .unwrap_or(0);
+    let content_len = response.headers().get("content-length").and_then(|v| v.to_str().ok()).and_then(|v| v.parse::<u64>().ok()).unwrap_or(0);
     total.store(content_len, Ordering::Relaxed);
 
     let temp_dir = std::env::temp_dir();
@@ -98,24 +88,15 @@ pub fn launch_installer(path: &std::path::Path) -> Result<(), String> {
     {
         let is_msi = path.extension().and_then(|s| s.to_str()).is_some_and(|ext| ext.eq_ignore_ascii_case("msi"));
         if is_msi {
-            std::process::Command::new("msiexec")
-                .arg("/i")
-                .arg(path)
-                .spawn()
-                .map_err(|e| format!("could not launch msi installer ({e})"))?;
+            std::process::Command::new("msiexec").arg("/i").arg(path).spawn().map_err(|e| format!("could not launch msi installer ({e})"))?;
         } else {
-            std::process::Command::new(path)
-                .spawn()
-                .map_err(|e| format!("could not launch installer ({e})"))?;
+            std::process::Command::new(path).spawn().map_err(|e| format!("could not launch installer ({e})"))?;
         }
         std::process::exit(0);
     }
     #[cfg(target_os = "macos")]
     {
-        std::process::Command::new("open")
-            .arg(path)
-            .spawn()
-            .map_err(|e| format!("could not open installer ({e})"))?;
+        std::process::Command::new("open").arg(path).spawn().map_err(|e| format!("could not open installer ({e})"))?;
         std::process::exit(0);
     }
     #[cfg(target_os = "linux")]

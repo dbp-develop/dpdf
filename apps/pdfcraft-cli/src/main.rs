@@ -1025,8 +1025,7 @@ fn ui(args: &[String]) -> Result<(), CliError> {
 /// Most a control file may hold. The app writes under 100 bytes.
 const CONTROL_FILE_MAX: u64 = 64 * 1024;
 
-const CONTROL_FILE_ADVICE: &str =
-    "Start the app with a control file in a folder only you can write, such as `dpdf --control ~/.dpdf-control.json`";
+const CONTROL_FILE_ADVICE: &str = "Start the app with a control file in a folder only you can write, such as `dpdf --control ~/.dpdf-control.json`";
 
 /// Read the file written by `dpdf --control FILE`.
 ///
