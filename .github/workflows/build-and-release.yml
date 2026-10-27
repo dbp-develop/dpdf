@@ -77,13 +77,14 @@ jobs:
         run: |
           $Stage = (Resolve-Path "target/windows-package/stage").Path
           $Models = (Resolve-Path "target/windows-package/models").Path
+          $Icon = (Resolve-Path "assets/app-icon/dpdf.ico").Path
           wix build packaging/windows/dpdf.wxs `
             packaging/windows/installer-ui.wxs `
             -arch x64 `
             -d "Version=1.0.1" `
             -d "BinDir=$Stage" `
             -d "ModelsDir=$Models" `
-            -d "IconPath=assets/app-icon/dpdf.ico" `
+            -d "IconPath=$Icon" `
             -o dist/release/dpdf-1.0.1-windows-x64.msi
 
       - name: Upload Windows Installers
