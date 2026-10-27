@@ -17,6 +17,8 @@
     <SummaryInformation Description="dpdf PDF workbench" Manufacturer="Divya" />
     <!-- Supports both per-user (no admin rights required) and per-machine (with admin approval) installations. -->
     <Property Id="INSTALLSCOPE" Value="perUser" Secure="yes" />
+    <Property Id="ALLUSERS" Value="2" Secure="yes" />
+    <Property Id="MSIINSTALLPERUSER" Value="1" Secure="yes" />
     <MajorUpgrade AllowSameVersionUpgrades="yes"
         DowngradeErrorMessage="A newer version of dpdf is already installed." />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
