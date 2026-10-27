@@ -62,7 +62,20 @@ pub fn download_update(url: &str, file_name: &str, progress: Arc<AtomicU64>, tot
     }
     let target_path = temp_dir.join(&safe_name);
 
-    let mut file = std::fs::File::create(&target_path).map_err(|e| format!("could not create temporary file ({e})"))?;
+    let (mut file, target_path) = match std::fs::File::create(&target_path) {
+        Ok(f) => (f, target_path),
+        Err(err) => {
+            // If the temp directory is inaccessible (e.g. corporate policy or locked file), try a user-writable fallback
+            let fallback_dir = std::env::var_os("USERPROFILE")
+                .map(|p| std::path::PathBuf::from(p).join("Downloads"))
+                .unwrap_or_else(|| std::path::PathBuf::from("."));
+            let fallback_path = fallback_dir.join(&safe_name);
+            match std::fs::File::create(&fallback_path) {
+                Ok(f) => (f, fallback_path),
+                Err(_) => return Err(format!("could not create download file ({err})")),
+            }
+        }
+    };
     let mut reader = response.body_mut().as_reader();
     let mut buffer = [0u8; 32768];
     let mut downloaded = 0u64;

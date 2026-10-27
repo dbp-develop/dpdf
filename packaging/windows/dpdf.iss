@@ -26,6 +26,7 @@ SolidCompression=yes
 WizardStyle=modern
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
+ChangesAssociations=yes
 
 ; Dual-Scope Installation:
 ; 'lowest' means default to current user without admin rights.

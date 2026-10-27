@@ -39,13 +39,13 @@
     </Upgrade>
     <Property Id="INSTALLPDFCONTEXTMENU" Secure="yes" />
     <Property Id="EXISTINGPDFCONTEXTMENU">
-      <RegistrySearch Id="PdfContextMenuSearch" Root="HKLM" Key="Software\Classes\SystemFileAssociations\.pdf\shell\dpdf.Edit" Type="raw" />
+      <RegistrySearch Id="PdfContextMenuSearch" Root="HKCR" Key="SystemFileAssociations\.pdf\shell\dpdf.Edit" Type="raw" />
     </Property>
     <SetProperty Id="INSTALLPDFCONTEXTMENU" Value="1" After="AppSearch" Sequence="first"
         Condition="NOT INSTALLPDFCONTEXTMENU AND (NOT PDFCONTEXTMENURELEASE OR EXISTINGPDFCONTEXTMENU)" />
     <Property Id="INSTALLIMAGECONTEXTMENU" Secure="yes" />
     <Property Id="EXISTINGIMAGECONTEXTMENU">
-      <RegistrySearch Id="ImageContextMenuSearch" Root="HKLM" Key="Software\Classes\SystemFileAssociations\.png\shell\dpdf.CreatePdf" Type="raw" />
+      <RegistrySearch Id="ImageContextMenuSearch" Root="HKCR" Key="SystemFileAssociations\.png\shell\dpdf.CreatePdf" Type="raw" />
     </Property>
     <SetProperty Id="INSTALLIMAGECONTEXTMENU" Value="1" After="AppSearch" Sequence="first"
         Condition="NOT INSTALLIMAGECONTEXTMENU AND (NOT IMAGECONTEXTMENURELEASE OR EXISTINGIMAGECONTEXTMENU)" />
