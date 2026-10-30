@@ -4,7 +4,38 @@ All notable changes to `dpdf` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-All versions follow the `v1.*` series.
+
+---
+
+## [2.0.0] - 2026-10-30 — Major UI Redesign & Enhanced UX
+
+### Added
+- **Modern Studio Slate Theme (Dark Mode)**:
+  - Deep studio slate pasteboard (`#090D13`) providing high contrast and document pop without black glare.
+  - Refined dark slate chrome (`#161B22`) and card elevations (`#1F2633`) with crisp border strokes (`#30363D`).
+  - Electric cyan brand accents (`#00A4D6`) across active tools, buttons, selection highlights, and indicators.
+  - Layered ambient elevation drop shadows (`blur: 32` for windows, `22` for canvas pages).
+- **Nordic Clean Light Theme (Light Mode)**:
+  - Soft cool-gray pasteboard (`#EBF0F5`) that eliminates harsh paper glare and eye strain.
+  - Crisp white panels and cards (`#FFFFFF` and `#F8FAFC`) with deep slate typography (`#0F172A`).
+  - Sky blue accents (`#0284C7`) and soft selection washes (`#E0F2FE`).
+- **Floating Frosted-Glass HUD Toolbar**:
+  - Floating pill toolbar anchored at the bottom-center of the document canvas.
+  - Provides instant, uncluttered access to essential document controls:
+    - **Previous Page** & **Next Page** navigation buttons (`chevron-left`, `chevron-right`).
+    - **Page Number Indicator** (`Page X / Y`).
+    - **Zoom Controls**: **Zoom Out**, clickable **Zoom %** button (single click resets to 100%), and **Zoom In**.
+    - **Fit Toggle**: One-click toggle between **Fit Width** and **Fit Page**.
+    - **Continuous Scroll Toggle**: One-click toggle between continuous multi-page scrolling and single-page view.
+  - Smart suppression: Automatically hides during file drag-and-drop operations to keep canvas drop zones unobstructed.
+- **Enhanced Document Elevation**:
+  - Refreshed canvas page rendering with subtle outer boundary strokes and ambient drop shadows for clean document separation.
+- **Modernized Tab & Navigation Chrome**:
+  - Modern 8px tab corner radii with sleek top accent indicator bars on active tabs.
+  - Enhanced window corner radii (12px) and menu corner radii (10px).
+
+### Changed
+- Major version bump to `v2.0.0` reflecting the complete user interface redesign and modern design system.
 
 ---
 

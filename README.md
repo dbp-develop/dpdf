@@ -18,27 +18,27 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-setup.exe"><img src="https://img.shields.io/badge/Windows-Setup%20.exe-D13B3B?style=for-the-badge&logo=windows&logoColor=white" alt="Windows Setup .exe"></a>
-  <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-windows-x64.msi"><img src="https://img.shields.io/badge/Windows-MSI%20Installer-1E222B?style=for-the-badge&logo=windows&logoColor=white" alt="Windows MSI"></a>
-  <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-windows-x64-portable.zip"><img src="https://img.shields.io/badge/Windows-Portable%20.zip-4A5568?style=for-the-badge&logo=windows&logoColor=white" alt="Windows Portable"></a>
+  <a href="https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-setup.exe"><img src="https://img.shields.io/badge/Windows-Setup%20.exe-D13B3B?style=for-the-badge&logo=windows&logoColor=white" alt="Windows Setup .exe"></a>
+  <a href="https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-windows-x64.msi"><img src="https://img.shields.io/badge/Windows-MSI%20Installer-1E222B?style=for-the-badge&logo=windows&logoColor=white" alt="Windows MSI"></a>
+  <a href="https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-windows-x64-portable.zip"><img src="https://img.shields.io/badge/Windows-Portable%20.zip-4A5568?style=for-the-badge&logo=windows&logoColor=white" alt="Windows Portable"></a>
   <br>
-  <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-macos-universal.dmg"><img src="https://img.shields.io/badge/macOS-Universal%20.dmg-D13B3B?style=for-the-badge&logo=apple&logoColor=white" alt="macOS DMG"></a>
-  <a href="https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-macos-universal.zip"><img src="https://img.shields.io/badge/macOS-App%20.zip-1E222B?style=for-the-badge&logo=apple&logoColor=white" alt="macOS Zip"></a>
+  <a href="https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-macos-universal.dmg"><img src="https://img.shields.io/badge/macOS-Universal%20.dmg-D13B3B?style=for-the-badge&logo=apple&logoColor=white" alt="macOS DMG"></a>
+  <a href="https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-macos-universal.zip"><img src="https://img.shields.io/badge/macOS-App%20.zip-1E222B?style=for-the-badge&logo=apple&logoColor=white" alt="macOS Zip"></a>
   <a href="https://github.com/dbp-develop/dpdf/releases/latest"><img src="https://img.shields.io/badge/Linux-All%20Versions-2D3748?style=for-the-badge&logo=linux&logoColor=white" alt="Linux Versions"></a>
 </p>
 
 ---
 
-## 📥 Direct Downloads (v1.1.0 Release)
+## 📥 Direct Downloads (v2.0.0 Release)
 
 | Platform | Type | Architecture / Scope | Direct Download Link |
 | :--- | :--- | :--- | :--- |
-| **Windows** | **GUI Setup (.exe)** | x64 (Dual-Scope User & Machine) | [**⬇️ dpdf-1.1.0-setup.exe**](https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-setup.exe) |
-| **Windows** | **MSI Package (.msi)** | x64 (WiX Dual-Scope Enterprise) | [**⬇️ dpdf-1.1.0-windows-x64.msi**](https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-windows-x64.msi) |
-| **Windows** | **Portable (.zip)** | x64 (Zero-install, USB ready) | [**⬇️ dpdf-1.1.0-windows-x64-portable.zip**](https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-windows-x64-portable.zip) |
-| **macOS** | **Universal DMG (.dmg)** | Apple Silicon (M1–M4) + Intel (Drag to Applications) | [**⬇️ dpdf-1.1.0-macos-universal.dmg**](https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-macos-universal.dmg) |
-| **macOS** | **Universal App (.zip)** | Apple Silicon + Intel (`dpdf.app`) | [**⬇️ dpdf-1.1.0-macos-universal.zip**](https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-macos-universal.zip) |
-| **macOS** | **Universal CLI (.zip)** | Apple Silicon + Intel (`dpdf-cli`) | [**⬇️ dpdf-cli-1.1.0-macos-universal.zip**](https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-cli-1.1.0-macos-universal.zip) |
+| **Windows** | **GUI Setup (.exe)** | x64 (Dual-Scope User & Machine) | [**⬇️ dpdf-2.0.0-setup.exe**](https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-setup.exe) |
+| **Windows** | **MSI Package (.msi)** | x64 (WiX Dual-Scope Enterprise) | [**⬇️ dpdf-2.0.0-windows-x64.msi**](https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-windows-x64.msi) |
+| **Windows** | **Portable (.zip)** | x64 (Zero-install, USB ready) | [**⬇️ dpdf-2.0.0-windows-x64-portable.zip**](https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-windows-x64-portable.zip) |
+| **macOS** | **Universal DMG (.dmg)** | Apple Silicon (M1–M4) + Intel (Drag to Applications) | [**⬇️ dpdf-2.0.0-macos-universal.dmg**](https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-macos-universal.dmg) |
+| **macOS** | **Universal App (.zip)** | Apple Silicon + Intel (`dpdf.app`) | [**⬇️ dpdf-2.0.0-macos-universal.zip**](https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-macos-universal.zip) |
+| **macOS** | **Universal CLI (.zip)** | Apple Silicon + Intel (`dpdf-cli`) | [**⬇️ dpdf-cli-2.0.0-macos-universal.zip**](https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-cli-2.0.0-macos-universal.zip) |
 | **Linux** | **Releases & Packages** | x86_64, aarch64 | [**⬇️ View Linux Releases**](https://github.com/dbp-develop/dpdf/releases/latest) |
 
 ---

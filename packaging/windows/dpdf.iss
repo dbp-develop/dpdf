@@ -3,7 +3,7 @@
 
 #define MyAppName "dpdf"
 #ifndef MyAppVersion
-  #define MyAppVersion "1.1.0"
+  #define MyAppVersion "2.0.0"
 #endif
 #ifndef BinDir
   #define BinDir "..\..\target\windows-package\stage"
