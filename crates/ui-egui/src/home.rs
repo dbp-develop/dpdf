@@ -40,11 +40,11 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                         ui.add_space(4.0);
 
                         for (label, url) in [
-                            ("Windows .exe", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.1/dpdf-1.0.1-setup.exe"),
-                            ("Windows .msi", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.1/dpdf-1.0.1-windows-x64.msi"),
-                            ("Windows Portable", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.1/dpdf-1.0.1-windows-x64-portable.zip"),
-                            ("macOS .dmg", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.1/dpdf-1.0.1-macos-universal.dmg"),
-                            ("macOS .zip", "https://github.com/dbp-develop/dpdf/releases/download/v1.0.1/dpdf-1.0.1-macos-universal.zip"),
+                            ("Windows .exe", "https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-setup.exe"),
+                            ("Windows .msi", "https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-windows-x64.msi"),
+                            ("Windows Portable", "https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-windows-x64-portable.zip"),
+                            ("macOS .dmg", "https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-macos-universal.dmg"),
+                            ("macOS .zip", "https://github.com/dbp-develop/dpdf/releases/download/v1.1.0/dpdf-1.1.0-macos-universal.zip"),
                             ("Linux Versions", "https://github.com/dbp-develop/dpdf/releases/latest"),
                         ] {
                             if widgets::pill_button(ui, tl!(label), false).clicked() {

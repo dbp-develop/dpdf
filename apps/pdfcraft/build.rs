@@ -24,7 +24,7 @@ fn main() {
         .set_manifest(windows_manifest::WINDOWS_MANIFEST)
         .set("ProductName", "dpdf")
         .set("FileDescription", "dpdf PDF workbench")
-        .set("LegalCopyright", "Copyright (c) 2026 Divya and contributors. Portions Copyright (c) the PdfCraft contributors.")
+        .set("LegalCopyright", "Copyright (c) 2026 Divya and contributors.")
         .set("OriginalFilename", "dpdf.exe")
         .set("InternalName", "dpdf");
     if let Err(e) = res.compile() {

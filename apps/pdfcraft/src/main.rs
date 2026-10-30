@@ -140,7 +140,7 @@ fn path_from_arg(arg: String) -> String {
     String::from_utf8(out).unwrap_or(arg)
 }
 
-/// Some programs start the PDF reader with the path unquoted (`pdfcraft.exe P:\Docs\01 Contract.PDF`),
+/// Some programs start the PDF reader with the path unquoted (`dpdf.exe P:\Docs\01 Contract.PDF`),
 /// so a path with spaces arrives split into several arguments (Acrobat accepts this). When an
 /// argument names no file but it and the ones after it, joined with one space, do, rejoin them
 /// (the longest such run). Anything else is kept as given. Runs of several spaces can't be recovered: the split has lost them.
@@ -462,7 +462,7 @@ fn app_creator<'a>(
 
 /// Tell the user when wgpu draws on the processor (WARP on Windows, llvmpipe on Linux) rather than
 /// a GPU, which makes everything slower. egui-wgpu only logs it, so the reporter of #519 had to find
-/// it in pdfcraft.log. The OpenGL fallback isn't covered: glow only reports its renderer through
+/// it in dpdf.log. The OpenGL fallback isn't covered: glow only reports its renderer through
 /// `unsafe` calls.
 fn notify_software_renderer(app: &mut PdfCraftApp, device_type: eframe::wgpu::DeviceType) {
     if device_type == eframe::wgpu::DeviceType::Cpu {
@@ -782,7 +782,7 @@ mod tests {
 
     #[test]
     fn a_control_channel_that_cant_be_published_stops_the_app() {
-        let dir = std::env::temp_dir().join(format!("pdfcraft-app-control-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("dpdf-app-control-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         std::fs::create_dir_all(&dir).unwrap();
         let path = |name: &str| dir.join(name).to_str().unwrap().to_owned();
@@ -871,7 +871,7 @@ mod tests {
     #[test]
     fn a_software_renderer_is_shown_to_the_user() {
         use eframe::wgpu::DeviceType;
-        // Issue #519: WARP or llvmpipe is announced in the app, not just in pdfcraft.log.
+        // Issue #519: WARP or llvmpipe is announced in the app, not just in dpdf.log.
         let mut app = super::PdfCraftApp::new();
         super::notify_software_renderer(&mut app, DeviceType::Cpu);
         let notice = app.toast.as_ref().map(|(m, _)| m.as_str()).unwrap_or_default();
@@ -1279,7 +1279,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn linux_display_gpus_reads_connected_connectors() -> std::io::Result<()> {
-        let dir = std::env::temp_dir().join(format!("pdfcraft-drm-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("dpdf-drm-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let card = |name: &str, (vendor, device): (u32, u32)| -> std::io::Result<()> {
             std::fs::create_dir_all(dir.join(name).join("device"))?;
@@ -1317,7 +1317,7 @@ mod tests {
     fn scratch() -> std::path::PathBuf {
         static N: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
         let n = N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        let d = std::env::temp_dir().join(format!("pdfcraft-control-file-{}-{n}", std::process::id()));
+        let d = std::env::temp_dir().join(format!("dpdf-control-file-{}-{n}", std::process::id()));
         let _ = std::fs::remove_dir_all(&d);
         std::fs::create_dir_all(&d).unwrap();
         d

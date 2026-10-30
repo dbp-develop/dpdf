@@ -4,7 +4,22 @@ All notable changes to `dpdf` will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-All versions follow the `v1.0.*` series.
+All versions follow the `v1.*` series.
+
+---
+
+## [1.1.0] - 2026-10-30
+
+### Added
+- **Continuous View as Default**: New documents now default to Continuous vertical scrolling view instead of single-page snapped stepping. When scrolling down, pages scroll smoothly and continuously.
+- **Drag-and-Drop Page Append**: Dragging and dropping a PDF file onto the bottom of the page or document area now automatically appends all of its pages to the end of the currently open document. Includes a visual drop target line and "+ Add to end of PDF" indicator badge.
+
+### Fixed
+- **Windows Non-Admin Installation**: Fixed installer configuration (WiX MSI and Inno Setup) allowing users without administrator permissions on corporate/work computers to install into user scope (`LocalAppData`) without installation getting stuck or disabled.
+- **Milestone Banner Hidden**: Removed the development "Coming in milestone M7" banner from the "Edit a PDF" panel for a clean, distraction-free release UI.
+
+### Changed
+- **Branding & Code References**: Cleaned up remaining legacy upstream references, updated external URLs to point directly to the dpdf GitHub repository, and bumped workspace packages to `1.1.0`.
 
 ---
 

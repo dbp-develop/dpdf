@@ -500,6 +500,7 @@ pub fn progress_notice(app: &PdfCraftApp, ctx: &egui::Context) -> bool {
 }
 
 /// The dpdf wordmark, sized to `height`.
+#[allow(dead_code)]
 pub fn dpdf_logo(ui: &mut egui::Ui, height: f32) -> Response {
     let dark = ui.visuals().dark_mode;
     let (uri, bytes): (&str, &'static [u8]) = if dark {
@@ -508,10 +509,6 @@ pub fn dpdf_logo(ui: &mut egui::Ui, height: f32) -> Response {
         ("bytes://dpdf-logo-horizontal.svg", include_bytes!("../../../docs/brand/dpdf-logo-horizontal.svg"))
     };
     ui.add(egui::Image::from_bytes(uri, bytes).max_height(height).alt_text("dpdf"))
-}
-
-pub fn artcraft_logo(ui: &mut egui::Ui, height: f32) -> Response {
-    dpdf_logo(ui, height)
 }
 
 /// The dpdf mark, `size` points square.
@@ -523,12 +520,9 @@ pub fn dpdf_mark(ui: &mut egui::Ui, size: f32) -> Response {
     )
 }
 
-pub fn artcraft_mark(ui: &mut egui::Ui, size: f32) -> Response {
-    dpdf_mark(ui, size)
-}
-
 /// Buttons for every community link (`pdfcraft_engine::links`), Discord first and prominent.
 /// Returns the registry command of the one clicked.
+#[allow(dead_code)]
 pub fn community_links(ui: &mut egui::Ui) -> Option<&'static str> {
     let mut clicked = None;
     ui.horizontal_wrapped(|ui| {

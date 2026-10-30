@@ -1776,6 +1776,22 @@ fn files_dropped_outside_the_page_grid_still_open_as_documents() {
     assert_eq!(doc.bytes.as_slice(), fixture(1).as_slice());
 }
 
+#[test]
+fn files_dropped_at_the_bottom_of_a_page_are_appended_to_the_document() {
+    let mut h = harness(2, |_| {});
+    h.run_steps(4);
+    assert_eq!(texts_of(h.state(), 0), ["Page 1", "Page 2"]);
+    // Hover at the bottom of the visible document view
+    let vp = h.state().views[0].viewport_screen();
+    let bottom_pos = egui::pos2(vp.center().x, vp.max.y - 15.0);
+    h.hover_at(bottom_pos);
+    h.run_steps(2);
+    drop_files(&mut h, vec![Dropped("extra.pdf", fixture(2))]);
+    h.run_steps(4);
+    assert_eq!(h.state().views.len(), 1, "appended to existing document instead of opening a new tab");
+    assert_eq!(texts_of(h.state(), 0), ["Page 1", "Page 2", "Page 1", "Page 2"]);
+}
+
 /// The Pages panel's thumbnail of page `label` (the panel is right of the page view).
 fn panel_thumb_rect(h: &Harness<'static, PdfCraftApp>, label: &str) -> egui::Rect {
     h.get_all_by_label(label).map(|n| n.rect()).max_by(|a, b| a.left().total_cmp(&b.left())).unwrap()

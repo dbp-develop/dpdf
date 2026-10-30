@@ -483,6 +483,9 @@ pub struct RecentFile {
     pub size: usize,
 }
 
+/// Main application state for dpdf.
+pub type DpdfApp = PdfCraftApp;
+
 pub struct PdfCraftApp {
     pub docking: docking::Workspace,
     pub(crate) pending_panel_reveals: Vec<docking::Panel>,
@@ -1113,7 +1116,7 @@ impl PdfCraftApp {
         match v.layout {
             // The view opened in Default page display already.
             L::Default => {}
-            L::SinglePage => (view.layout, view.continuous) = (canvas::PageLayout::Single, false),
+            L::SinglePage => (view.layout, view.continuous) = (canvas::PageLayout::Single, self.view_defaults.continuous),
             L::SinglePageContinuous => (view.layout, view.continuous) = (canvas::PageLayout::Single, true),
             L::TwoUp => (view.layout, view.continuous) = (canvas::PageLayout::TwoUp, false),
             L::TwoUpContinuous => (view.layout, view.continuous) = (canvas::PageLayout::TwoUp, true),
@@ -1496,6 +1499,75 @@ impl PdfCraftApp {
         if let Some(drop) = self.grid_drop.take() {
             self.insert_each(drop.files.into_iter().map(read_grid_file));
         }
+    }
+
+    /// When a document is open, files dropped at the bottom of the page (or bottom of the viewport)
+    /// append their pages to the end of the open document. Returns files not consumed.
+    #[cfg(not(target_arch = "wasm32"))]
+    fn drop_on_page_bottom(&mut self, dropped: Vec<egui::DroppedFileHandle>, ctx: &egui::Context) -> Vec<egui::DroppedFileHandle> {
+        if dropped.is_empty() {
+            return dropped;
+        }
+        let Some(active_idx) = self.active else {
+            return dropped;
+        };
+        let Some(view) = self.views.get(active_idx) else {
+            return dropped;
+        };
+        if view.organize || self.dialog.is_some() || self.combine_showing() {
+            return dropped;
+        }
+        let id = view.id;
+        let Some(doc) = self.session.get(id) else {
+            return dropped;
+        };
+        if !doc.allows_assembly() {
+            return dropped;
+        }
+        let pointer = drag_pointer::in_window(ctx).or_else(|| ctx.input(|i| i.pointer.hover_pos().or_else(|| i.pointer.latest_pos())));
+        let Some(p) = pointer else {
+            return dropped;
+        };
+
+        let vp = view.viewport_screen();
+        if !vp.is_positive() {
+            return dropped;
+        }
+        let in_x = p.x >= vp.min.x - 40.0 && p.x <= vp.max.x + 40.0;
+        if !in_x {
+            return dropped;
+        }
+
+        let on_page_bottom = view.screen_rects().iter().any(|(_, r)| {
+            let bottom_start = r.min.y + r.height() * 0.70;
+            p.y >= bottom_start && p.y <= r.max.y + 60.0 && (r.min.x - 40.0..=r.max.x + 40.0).contains(&p.x)
+        });
+        let below_last_page = view.screen_rects().last().is_some_and(|(_, r)| p.y >= r.max.y - 30.0 && p.y <= vp.max.y + 30.0);
+        let in_viewport_bottom = p.y >= vp.min.y + vp.height() * 0.75 && p.y <= vp.max.y + 30.0;
+
+        if on_page_bottom || below_last_page || in_viewport_bottom {
+            let mut files = Vec::new();
+            for f in &dropped {
+                let name = f.path().file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "dropped.pdf".into());
+                if f.path().is_absolute() {
+                    files.push((name, Err(f.path().to_path_buf())));
+                    continue;
+                }
+                match f.bytes() {
+                    Ok(b) => files.push((name, Ok(b))),
+                    Err(e) => self.notify_fmt("Couldn't read {name}: {e}", &[("name", &name), ("e", &e)]),
+                }
+            }
+            if !files.is_empty() {
+                let count = self.session.get(id).map_or(0, |d| d.info.pages.len());
+                let view = &mut self.views[active_idx];
+                view.insert_at = Some(count);
+                self.insert_each(files.into_iter().map(read_grid_file));
+                ctx.request_repaint();
+                return Vec::new();
+            }
+        }
+        dropped
     }
 
     /// Browsers read dropped files asynchronously; the bytes land in `inbox` and open next frame.
@@ -3017,6 +3089,8 @@ impl eframe::App for PdfCraftApp {
         let dropped = self.drop_on_signature_pad(dropped);
         #[cfg(not(target_arch = "wasm32"))]
         let dropped = self.drop_on_grid(dropped, ctx);
+        #[cfg(not(target_arch = "wasm32"))]
+        let dropped = self.drop_on_page_bottom(dropped, ctx);
         for f in dropped {
             // Files dropped on the Combine files tab join its list instead of opening.
             if self.combine_showing() {

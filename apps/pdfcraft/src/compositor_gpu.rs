@@ -149,7 +149,7 @@ mod tests {
     #[cfg(target_os = "linux")]
     #[test]
     fn the_gpu_behind_a_device_number_comes_from_sysfs() -> std::io::Result<()> {
-        let dir = std::env::temp_dir().join(format!("pdfcraft-dev-char-{}", std::process::id()));
+        let dir = std::env::temp_dir().join(format!("dpdf-dev-char-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         // /sys/dev/char/226:128 links to the render node, whose `device` is the PCI GPU.
         std::fs::create_dir_all(dir.join("226:128/device"))?;

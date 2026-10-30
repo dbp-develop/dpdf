@@ -62,7 +62,9 @@ fn parse(v: &str) -> Option<(u64, u64, u64)> {
 }
 
 /// Download stage for the in-app updater.
+#[derive(Default)]
 pub(crate) enum DownloadState {
+    #[default]
     Idle,
     Downloading {
         progress: Arc<std::sync::atomic::AtomicU64>,
@@ -71,12 +73,6 @@ pub(crate) enum DownloadState {
     },
     Done(std::path::PathBuf),
     Failed(String),
-}
-
-impl Default for DownloadState {
-    fn default() -> Self {
-        Self::Idle
-    }
 }
 
 /// Where a check is.
@@ -288,7 +284,7 @@ pub(crate) fn dialog(app: &mut PdfCraftApp, ctx: &egui::Context) {
             (_, DownloadState::Failed(err)) => {
                 ui.label(egui::RichText::new(tl!("Update download failed.")).strong());
                 ui.add_space(4.0);
-                ui.label(egui::RichText::new(format!("{err}")).color(t.text_muted));
+                ui.label(egui::RichText::new(err.to_string()).color(t.text_muted));
                 ui.add_space(12.0);
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                     if widgets::pill_button(ui, tl!("Open in browser"), true).clicked() {
@@ -413,10 +409,10 @@ pub(crate) fn dialog(app: &mut PdfCraftApp, ctx: &egui::Context) {
     if let Some(url) = open_url {
         app.open_url(&url);
     }
-    if let Some(path) = launch_path {
-        if let Some(launcher) = &app.installer_launcher {
-            let _ = launcher(&path);
-        }
+    if let Some(path) = launch_path
+        && let Some(launcher) = &app.installer_launcher
+    {
+        let _ = launcher(&path);
     }
     if close {
         app.updates.open = false;

@@ -7,7 +7,7 @@ on:
       - 'website/**'
       - '.github/workflows/deploy-pages.yml'
     tags:
-      - 'v1.0.*'
+      - 'v*'
   workflow_dispatch:
 
 permissions:
@@ -59,7 +59,7 @@ jobs:
           Copy-Item "$BinDir\dpdf.exe", "$BinDir\dpdf-cli.exe" $PortableDir
           Copy-Item "LICENSE-MIT", "LICENSE-APACHE", "NOTICE", "README.md" $PortableDir
           Set-Content "$PortableDir\portable.txt" "dpdf portable mode"
-          Compress-Archive -Path "$PortableDir\*" -DestinationPath "dist/release/dpdf-1.0.1-windows-x64-portable.zip" -Force
+          Compress-Archive -Path "$PortableDir\*" -DestinationPath "dist/release/dpdf-1.1.0-windows-x64-portable.zip" -Force
 
       - name: Set up Inno Setup
         run: choco install innosetup --no-progress -y
@@ -67,7 +67,7 @@ jobs:
       - name: Compile Inno Setup Installer (.exe)
         shell: pwsh
         run: |
-          iscc /D"BinDir=..\..\target\windows-package\stage" packaging/windows/dpdf.iss
+          iscc /D"BinDir=..\..\target\windows-package\stage" /D"MyAppVersion=1.1.0" packaging/windows/dpdf.iss
 
       - name: Set up WiX Toolset
         run: dotnet tool install --global wix --version 5.0.2
@@ -81,11 +81,11 @@ jobs:
           wix build packaging/windows/dpdf.wxs `
             packaging/windows/installer-ui.wxs `
             -arch x64 `
-            -d "Version=1.0.1" `
+            -d "Version=1.1.0" `
             -d "BinDir=$Stage" `
             -d "ModelsDir=$Models" `
             -d "IconPath=$Icon" `
-            -o dist/release/dpdf-1.0.1-windows-x64.msi
+            -o dist/release/dpdf-1.1.0-windows-x64.msi
 
       - name: Upload Windows Installers
         uses: actions/upload-artifact@v4
@@ -133,7 +133,7 @@ jobs:
           if [ -f packaging/macos/Credits.rtf ]; then
             cp packaging/macos/Credits.rtf "$APP/Contents/Resources/Credits.rtf"
           fi
-          sed -e "s/@VERSION@/1.0.1/g" -e "s/@SHORT_VERSION@/1.0.1/g" -e "s/@BUILD_SHA@/${{ github.sha }}/g" packaging/macos/Info.plist.in > "$APP/Contents/Info.plist"
+          sed -e "s/@VERSION@/1.1.0/g" -e "s/@SHORT_VERSION@/1.1.0/g" -e "s/@BUILD_SHA@/${{ github.sha }}/g" packaging/macos/Info.plist.in > "$APP/Contents/Info.plist"
           printf 'APPL????' > "$APP/Contents/PkgInfo"
 
           # Ad-hoc sign app bundle
@@ -143,16 +143,16 @@ jobs:
           mkdir -p dist/release target/dmg-stage
           ditto "$APP" target/dmg-stage/dpdf.app
           ln -s /Applications target/dmg-stage/Applications
-          hdiutil create -srcfolder target/dmg-stage -volname "dpdf" -fs HFS+ -format UDZO -ov "dist/release/dpdf-1.0.1-macos-universal.dmg"
+          hdiutil create -srcfolder target/dmg-stage -volname "dpdf" -fs HFS+ -format UDZO -ov "dist/release/dpdf-1.1.0-macos-universal.dmg"
 
           # Package Universal ZIPs
-          ditto -c -k --keepParent "$APP" "dist/release/dpdf-1.0.1-macos-universal.zip"
+          ditto -c -k --keepParent "$APP" "dist/release/dpdf-1.1.0-macos-universal.zip"
           mkdir -p target/cli-stage
           cp target/universal/release/dpdf-cli target/cli-stage/
           for f in README.md LICENSE-MIT LICENSE-APACHE NOTICE; do
             if [ -f "$f" ]; then cp "$f" target/cli-stage/; fi
           done
-          ditto -c -k --keepParent target/cli-stage "dist/release/dpdf-cli-1.0.1-macos-universal.zip"
+          ditto -c -k --keepParent target/cli-stage "dist/release/dpdf-cli-1.1.0-macos-universal.zip"
 
       - name: Upload macOS Installers
         uses: actions/upload-artifact@v4
@@ -163,10 +163,10 @@ jobs:
             dist/release/dpdf-*.zip
 
   publish-release:
-    name: Publish Release v1.0.1
+    name: Publish Release v1.1.0
     runs-on: ubuntu-latest
     needs: [build-windows, build-macos]
-    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v1.0.')
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
 
     steps:
       - name: Checkout repository
@@ -187,8 +187,8 @@ jobs:
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v1.0.1
-          name: "dpdf v1.0.1"
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.1.0' }}
+          name: "dpdf ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v1.1.0' }}"
           body_path: CHANGELOG.md
           draft: false
           prerelease: false

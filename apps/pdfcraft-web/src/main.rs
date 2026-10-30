@@ -1,4 +1,4 @@
-//! PdfCraft in the browser. Build: `cd apps/pdfcraft-web && trunk build --release`
+//! dpdf in the browser. Build: `cd apps/pdfcraft-web && trunk build --release`
 //! (trunk generates the JS loader; no handwritten JS — plan/execution-plan.md §1).
 
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
@@ -12,7 +12,7 @@ fn main() {
     wasm_bindgen_futures::spawn_local(async move {
         let Some(canvas) = web_sys::window()
             .and_then(|w| w.document())
-            .and_then(|d| d.get_element_by_id("pdfcraft"))
+            .and_then(|d| d.get_element_by_id("dpdf"))
             .and_then(|e| e.dyn_into::<web_sys::HtmlCanvasElement>().ok())
         else {
             return;
@@ -24,7 +24,9 @@ fn main() {
                 Box::new(|cc| {
                     let mut app = PdfCraftApp::new();
                     // "printcraft": settings saved under the app's former name, PrintCraft.
-                    if let Some(json) = cc.storage.and_then(|s| s.get_string("pdfcraft").or_else(|| s.get_string("printcraft"))) {
+                    if let Some(json) =
+                        cc.storage.and_then(|s| s.get_string("dpdf").or_else(|| s.get_string("pdfcraft")).or_else(|| s.get_string("printcraft")))
+                    {
                         app.restore(&json);
                     }
                     // `?file=<url>` opens a PDF from a URL (same-origin or CORS-enabled).
@@ -41,7 +43,7 @@ fn main() {
                                     }
                                 }
                                 Err(e) => {
-                                    eframe::web_sys::console::error_1(&format!("PdfCraft: could not fetch {url}: {e}").into());
+                                    eframe::web_sys::console::error_1(&format!("dpdf: could not fetch {url}: {e}").into());
                                     // Shown in the app too, not only in the console (#173).
                                     if let Ok(mut q) = failed.lock() {
                                         q.push((name, e));
@@ -60,7 +62,7 @@ fn main() {
                         && let Some(bridge) = host::Bridge::new()
                     {
                         // `?author=`: the host's name for the user signs their comments,
-                        // unless they chose a name in PdfCraft (the web default is "Guest").
+                        // unless they chose a name in dpdf (the web default is "Guest").
                         if let Some(author) = query_param("author").map(|a| a.trim().to_string()).filter(|a| !a.is_empty())
                             && app.comment_prefs.author == "Guest"
                         {
@@ -72,7 +74,7 @@ fn main() {
                         bridge.post_ready();
                     } else if query_param("host").as_deref() == Some("parent") {
                         eframe::web_sys::console::warn_1(
-                            &"PdfCraft: ?host=parent needs a framing page on the same origin; saves download instead".into(),
+                            &"dpdf: ?host=parent needs a framing page on the same origin; saves download instead".into(),
                         );
                     }
                     Ok(Box::new(app))
@@ -126,13 +128,13 @@ async fn fetch_bytes(url: &str) -> Result<Vec<u8>, String> {
 /// The `postMessage` bridge to a same-origin parent page. Messages are plain objects with a
 /// `type`:
 ///
-/// - `pdfcraft:ready` (to the parent): the app is listening; send files now.
-/// - `pdfcraft:open` (from the parent): `{ name, bytes }`, where `bytes` is an `ArrayBuffer` or
+/// - `dpdf:ready` (to the parent): the app is listening; send files now.
+/// - `dpdf:open` (from the parent): `{ name, bytes }`, where `bytes` is an `ArrayBuffer` or
 ///   `Uint8Array` holding a PDF. It opens in a tab, like a `?file=` URL.
-/// - `pdfcraft:save` (to the parent): `{ name, saveAs, bytes }` when the user saves; `bytes` is
+/// - `dpdf:save` (to the parent): `{ name, saveAs, bytes }` when the user saves; `bytes` is
 ///   a transferred `ArrayBuffer`. The parent stores the file (and reports its own errors).
-/// - `pdfcraft:dirty` (to the parent): `{ dirty }` whenever unsaved work appears or goes away.
-/// - `pdfcraft:failed` (to the parent): `{ error }` when the app couldn't start.
+/// - `dpdf:dirty` (to the parent): `{ dirty }` whenever unsaved work appears or goes away.
+/// - `dpdf:failed` (to the parent): `{ error }` when the app couldn't start.
 ///
 /// Only the parent window on the app's own origin is heard or answered. With a parent on
 /// another origin there is no bridge: the app runs as if unframed and saves download.
@@ -174,19 +176,19 @@ mod host {
         }
 
         pub fn post_ready(&self) {
-            if let Some(m) = message(&[("type", "pdfcraft:ready".into()), ("version", env!("CARGO_PKG_VERSION").into())]) {
+            if let Some(m) = message(&[("type", "dpdf:ready".into()), ("version", env!("CARGO_PKG_VERSION").into())]) {
                 let _ = self.post(&m, None);
             }
         }
 
         /// The app couldn't start (no WebGL, for example): let the parent say so.
         pub fn post_failed(&self, error: &str) {
-            if let Some(m) = message(&[("type", "pdfcraft:failed".into()), ("error", error.into())]) {
+            if let Some(m) = message(&[("type", "dpdf:failed".into()), ("error", error.into())]) {
                 let _ = self.post(&m, None);
             }
         }
 
-        /// Hear `pdfcraft:open` from the parent and queue the file like a `?file=` download.
+        /// Hear `dpdf:open` from the parent and queue the file like a `?file=` download.
         pub fn listen(&self, inbox: pdfcraft_ui_egui::Inbox, ctx: egui::Context) {
             let parent = self.parent.clone();
             let origin = self.origin.clone();
@@ -195,7 +197,7 @@ mod host {
                     return;
                 }
                 let data = event.data();
-                if string(&data, "type").as_deref() != Some("pdfcraft:open") {
+                if string(&data, "type").as_deref() != Some("dpdf:open") {
                     return;
                 }
                 let name = string(&data, "name").filter(|n| !n.trim().is_empty()).unwrap_or_else(|| "document.pdf".to_string());
@@ -222,9 +224,8 @@ mod host {
             let bridge = self.clone();
             Box::new(move |name: &str, bytes: &[u8], save_as: bool| {
                 let buffer = js_sys::Uint8Array::from(bytes).buffer();
-                let m =
-                    message(&[("type", "pdfcraft:save".into()), ("name", name.into()), ("saveAs", save_as.into()), ("bytes", buffer.clone().into())])
-                        .ok_or_else(|| "couldn't build the message".to_string())?;
+                let m = message(&[("type", "dpdf:save".into()), ("name", name.into()), ("saveAs", save_as.into()), ("bytes", buffer.clone().into())])
+                    .ok_or_else(|| "couldn't build the message".to_string())?;
                 bridge.post(&m, Some(&buffer))
             })
         }
@@ -235,7 +236,7 @@ mod host {
             Box::new(move |dirty: bool| {
                 if dirty != last {
                     last = dirty;
-                    if let Some(m) = message(&[("type", "pdfcraft:dirty".into()), ("dirty", dirty.into())]) {
+                    if let Some(m) = message(&[("type", "dpdf:dirty".into()), ("dirty", dirty.into())]) {
                         let _ = bridge.post(&m, None);
                     }
                 }
@@ -258,5 +259,5 @@ mod host {
 
 #[cfg(not(target_arch = "wasm32"))]
 fn main() {
-    eprintln!("pdfcraft-web targets wasm32: run `trunk serve` or `trunk build --release` in apps/pdfcraft-web");
+    eprintln!("dpdf-web targets wasm32: run `trunk serve` or `trunk build --release` in apps/pdfcraft-web");
 }

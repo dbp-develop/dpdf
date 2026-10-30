@@ -672,8 +672,18 @@ impl DocView {
         self.screen_xforms.iter().find(|(p, _)| *p == page).map(|(_, xf)| xf.rect)
     }
 
+    /// Screen rects of the pages drawn last frame (hit-testing, tests, automation).
+    pub fn screen_rects(&self) -> &[(usize, Rect)] {
+        &self.screen_rects
+    }
+
     /// The document area on screen.
     pub fn viewport_rect(&self) -> Rect {
+        self.viewport_screen
+    }
+
+    /// The scroll viewport on screen last frame.
+    pub fn viewport_screen(&self) -> Rect {
         self.viewport_screen
     }
 
@@ -3738,6 +3748,39 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     });
 
     view.viewport_screen = out.inner_rect;
+    if unobstructed && doc.allows_assembly() && ui.input(|i| !i.raw.hovered_files.is_empty()) {
+        let pointer = ui.input(|i| i.pointer.hover_pos().or_else(|| i.pointer.latest_pos()));
+        if let Some(p) = pointer {
+            let vp = view.viewport_screen;
+            let on_page_bottom = view.screen_rects.iter().any(|(_, r)| {
+                let bottom_start = r.min.y + r.height() * 0.70;
+                p.y >= bottom_start && p.y <= r.max.y + 60.0 && (r.min.x - 40.0..=r.max.x + 40.0).contains(&p.x)
+            });
+            let below_last_page = view.screen_rects.last().is_some_and(|(_, r)| p.y >= r.max.y - 30.0 && p.y <= vp.max.y + 30.0);
+            let in_viewport_bottom = p.y >= vp.min.y + vp.height() * 0.75 && p.y <= vp.max.y + 30.0;
+            if (on_page_bottom || below_last_page || in_viewport_bottom) && vp.contains(p) {
+                let painter = ui.painter().with_clip_rect(vp);
+                let y = if let Some((_, r)) = view.screen_rects.iter().find(|(_, r)| {
+                    let bottom_start = r.min.y + r.height() * 0.70;
+                    p.y >= bottom_start && p.y <= r.max.y + 60.0
+                }) {
+                    (r.max.y + 4.0).min(vp.max.y - 12.0)
+                } else if let Some((_, r)) = view.screen_rects.last() {
+                    (r.max.y + 4.0).min(vp.max.y - 12.0)
+                } else {
+                    vp.max.y - 16.0
+                };
+                let x_min = (vp.min.x + 20.0).max(view.screen_rects.iter().map(|(_, r)| r.min.x).reduce(f32::min).unwrap_or(vp.min.x + 20.0));
+                let x_max = (vp.max.x - 20.0).min(view.screen_rects.iter().map(|(_, r)| r.max.x).reduce(f32::max).unwrap_or(vp.max.x - 20.0));
+                if x_max > x_min {
+                    painter.line_segment([pos2(x_min, y), pos2(x_max, y)], Stroke::new(3.0, t.accent));
+                    let badge_rect = Rect::from_center_size(pos2((x_min + x_max) / 2.0, y), vec2(160.0, 22.0));
+                    painter.rect_filled(badge_rect, CornerRadius::same(11), t.accent);
+                    painter.text(badge_rect.center(), Align2::CENTER_CENTER, tl!("Add to end of PDF"), theme::semibold(11.0), Color32::WHITE);
+                }
+            }
+        }
+    }
     view.auto_scroll.paint(ui, avail);
     if unobstructed && matches!(tool, QuickTool::Select | QuickTool::ColumnSelect) {
         copy_selected |= selection_actions(ui, avail, view, info, prefs, allowed && !comments_hidden, can_copy);
