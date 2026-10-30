@@ -72,51 +72,51 @@ impl Tokens {
         match kind {
             ThemeKind::Light => Self {
                 kind,
-                titlebar: Color32::from_rgb(0xE2, 0xE8, 0xF0),
+                titlebar: Color32::from_rgb(0xF1, 0xF5, 0xF9),
                 chrome: Color32::from_rgb(0xFF, 0xFF, 0xFF),
                 panel: Color32::from_rgb(0xFF, 0xFF, 0xFF),
-                pasteboard: Color32::from_rgb(0xF8, 0xFA, 0xFC),
-                card: Color32::from_rgb(0xFF, 0xFF, 0xFF),
+                pasteboard: Color32::from_rgb(0xEB, 0xF0, 0xF5),
+                card: Color32::from_rgb(0xF8, 0xFA, 0xFC),
                 border: Color32::from_rgb(0xCB, 0xD5, 0xE1),
                 divider: Color32::from_rgb(0xE2, 0xE8, 0xF0),
                 text: Color32::from_rgb(0x0F, 0x17, 0x2A),
                 text_muted: Color32::from_rgb(0x47, 0x55, 0x69),
-                text_faint: Color32::from_rgb(0x59, 0x67, 0x7A),
+                text_faint: Color32::from_rgb(0x64, 0x74, 0x8B),
                 icon: Color32::from_rgb(0x33, 0x41, 0x55),
                 hover: Color32::from_rgb(0xF1, 0xF5, 0xF9),
                 pressed: Color32::from_rgb(0xE2, 0xE8, 0xF0),
-                selected: Color32::from_rgb(0xFF, 0xE4, 0xE6),
-                accent: Color32::from_rgb(0xE1, 0x1D, 0x48),
-                accent_text: Color32::from_rgb(0xBE, 0x12, 0x3C),
-                accent_soft: Color32::from_rgb(0xFF, 0xE4, 0xE6),
+                selected: Color32::from_rgb(0xE0, 0xF2, 0xFE),
+                accent: Color32::from_rgb(0x02, 0x84, 0xC7),
+                accent_text: Color32::from_rgb(0x03, 0x69, 0xA1),
+                accent_soft: Color32::from_rgb(0xE0, 0xF2, 0xFE),
                 field: Color32::from_rgb(0xFF, 0xFF, 0xFF),
-                badge_new: Color32::from_rgb(0xE1, 0x1D, 0x48),
-                page_shadow: Color32::from_black_alpha(34),
-                radius: 6,
+                badge_new: Color32::from_rgb(0x02, 0x84, 0xC7),
+                page_shadow: Color32::from_black_alpha(32),
+                radius: 8,
             },
             ThemeKind::Dark => Self {
                 kind,
-                titlebar: Color32::from_rgb(0x0F, 0x17, 0x2A),
-                chrome: Color32::from_rgb(0x1E, 0x29, 0x3B),
-                panel: Color32::from_rgb(0x1E, 0x29, 0x3B),
-                pasteboard: Color32::from_rgb(0x0F, 0x17, 0x2A),
-                card: Color32::from_rgb(0x24, 0x2E, 0x3F),
-                border: Color32::from_rgb(0x33, 0x41, 0x55),
-                divider: Color32::from_rgb(0x2A, 0x36, 0x4A),
-                text: Color32::from_rgb(0xF8, 0xFA, 0xFC),
-                text_muted: Color32::from_rgb(0xAE, 0xBA, 0xCC),
-                text_faint: Color32::from_rgb(0x9E, 0xAB, 0xBD),
-                icon: Color32::from_rgb(0xCB, 0xD5, 0xE1),
-                hover: Color32::from_rgb(0x28, 0x35, 0x48),
-                pressed: Color32::from_rgb(0x33, 0x41, 0x55),
-                selected: Color32::from_rgb(0x4C, 0x1D, 0x28),
-                accent: Color32::from_rgb(0xF4, 0x3F, 0x5E),
-                accent_text: Color32::from_rgb(0xFB, 0x71, 0x85),
-                accent_soft: Color32::from_rgb(0x3B, 0x18, 0x22),
-                field: Color32::from_rgb(0x1E, 0x29, 0x3B),
-                badge_new: Color32::from_rgb(0xF4, 0x3F, 0x5E),
-                page_shadow: Color32::from_black_alpha(120),
-                radius: 6,
+                titlebar: Color32::from_rgb(0x0D, 0x11, 0x17),
+                chrome: Color32::from_rgb(0x16, 0x1B, 0x22),
+                panel: Color32::from_rgb(0x16, 0x1B, 0x22),
+                pasteboard: Color32::from_rgb(0x09, 0x0D, 0x13),
+                card: Color32::from_rgb(0x1F, 0x26, 0x33),
+                border: Color32::from_rgb(0x30, 0x36, 0x3D),
+                divider: Color32::from_rgb(0x21, 0x26, 0x2D),
+                text: Color32::from_rgb(0xF0, 0xF6, 0xFC),
+                text_muted: Color32::from_rgb(0x8B, 0x94, 0x9E),
+                text_faint: Color32::from_rgb(0x6E, 0x76, 0x81),
+                icon: Color32::from_rgb(0xC9, 0xD1, 0xD9),
+                hover: Color32::from_rgb(0x26, 0x30, 0x40),
+                pressed: Color32::from_rgb(0x30, 0x3C, 0x4F),
+                selected: Color32::from_rgb(0x13, 0x37, 0x4E),
+                accent: Color32::from_rgb(0x00, 0xA4, 0xD6),
+                accent_text: Color32::from_rgb(0x38, 0xBD, 0xF8),
+                accent_soft: Color32::from_rgb(0x0E, 0x34, 0x48),
+                field: Color32::from_rgb(0x16, 0x1B, 0x22),
+                badge_new: Color32::from_rgb(0x00, 0xA4, 0xD6),
+                page_shadow: Color32::from_black_alpha(150),
+                radius: 8,
             },
         }
     }
@@ -437,10 +437,10 @@ pub fn apply(ctx: &egui::Context, kind: ThemeKind) {
     v.selection.stroke = Stroke::new(1.0, t.accent);
     v.hyperlink_color = t.accent_text;
     v.override_text_color = Some(t.text);
-    v.window_corner_radius = CornerRadius::same(10);
-    v.menu_corner_radius = CornerRadius::same(8);
-    v.window_shadow = egui::Shadow { offset: [0, 8], blur: 28, spread: 0, color: Color32::from_black_alpha(if t.dark() { 110 } else { 38 }) };
-    v.popup_shadow = egui::Shadow { offset: [0, 4], blur: 16, spread: 0, color: Color32::from_black_alpha(if t.dark() { 90 } else { 30 }) };
+    v.window_corner_radius = CornerRadius::same(12);
+    v.menu_corner_radius = CornerRadius::same(10);
+    v.window_shadow = egui::Shadow { offset: [0, 8], blur: 32, spread: 0, color: Color32::from_black_alpha(if t.dark() { 130 } else { 35 }) };
+    v.popup_shadow = egui::Shadow { offset: [0, 4], blur: 18, spread: 0, color: Color32::from_black_alpha(if t.dark() { 100 } else { 25 }) };
     for w in [&mut v.widgets.noninteractive, &mut v.widgets.inactive, &mut v.widgets.hovered, &mut v.widgets.active, &mut v.widgets.open] {
         w.corner_radius = CornerRadius::same(t.radius);
         w.fg_stroke.color = t.text;

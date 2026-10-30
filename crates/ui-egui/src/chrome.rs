@@ -446,7 +446,11 @@ fn tab(
             press.fill(Color32::TRANSPARENT, t.hover, t.pressed)
         };
         if bg.a() > 0 {
-            ui.painter().rect_filled(rect, CornerRadius { nw: 7, ne: 7, sw: 0, se: 0 }, bg);
+            ui.painter().rect_filled(rect, CornerRadius { nw: 8, ne: 8, sw: 0, se: 0 }, bg);
+        }
+        if active {
+            let top_bar = Rect::from_min_size(rect.min, vec2(rect.width(), 2.0));
+            ui.painter().rect_filled(top_bar, CornerRadius { nw: 8, ne: 8, sw: 0, se: 0 }, t.accent);
         }
         icons::paint(
             ui,

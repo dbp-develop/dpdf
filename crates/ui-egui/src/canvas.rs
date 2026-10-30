@@ -2925,9 +2925,16 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
                 current = i;
             }
             let xf = PageXform { rect: r, rot: view.rotation, pw: info.pages[i].width.max(1.0), ph: info.pages[i].height.max(1.0) };
-            // Soft shadow + paper.
-            painter.add(egui::epaint::Shadow { offset: [0, 3], blur: 14, spread: 0, color: t.page_shadow }.as_shape(r, CornerRadius::ZERO));
+            // Modern paper elevation: ambient shadow + boundary stroke.
+            let shadow_blur = if t.dark() { 22 } else { 16 };
+            painter.add(egui::epaint::Shadow { offset: [0, 4], blur: shadow_blur, spread: 0, color: t.page_shadow }.as_shape(r, CornerRadius::ZERO));
             painter.rect_filled(r, CornerRadius::ZERO, Color32::WHITE);
+            painter.rect_stroke(
+                r,
+                CornerRadius::ZERO,
+                Stroke::new(1.0, t.border.gamma_multiply(if t.dark() { 0.4 } else { 0.3 })),
+                egui::StrokeKind::Outside,
+            );
             if let Some(err) = view.errors.get(&i) {
                 painter.rect_filled(r, CornerRadius::ZERO, Color32::from_rgb(0xFB, 0xF4, 0xF4));
                 icons::paint(
@@ -3547,12 +3554,11 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
                 view.flash = Some((fp, fr, t0));
                 let age = (now - t0) as f32;
                 if age < 1.6 {
-                    let a = ((1.6 - age) / 1.6 * 255.0) as u8;
                     let sr = xf.user_rect(info, i, fr).expand(4.0);
                     painter.rect_stroke(
                         sr,
-                        CornerRadius::same(3),
-                        Stroke::new(2.5, Color32::from_rgba_unmultiplied(0xE1, 0x1D, 0x48, a)),
+                        CornerRadius::same(4),
+                        Stroke::new(2.5, t.accent.gamma_multiply((1.6 - age) / 1.6)),
                         egui::StrokeKind::Outside,
                     );
                     ui.ctx().request_repaint();
@@ -3931,6 +3937,7 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     }
     find_bar(view, info.pages.len(), avail, ui, &t);
     page_size_hint(view, info, units, avail, unobstructed, ui, &t);
+    floating_hud(view, info.pages.len(), avail, ui, &t);
     if tool == QuickTool::EnhanceCamera {
         crate::camera_ui::bar(ui.ctx(), view, avail, &t, can_modify);
     }
@@ -4341,6 +4348,95 @@ fn page_size_hint(view: &DocView, info: &DocInfo, units: crate::units::Unit, are
                 .inner_margin(egui::Margin::symmetric(8, 4))
                 .show(ui, |ui| {
                     ui.add(egui::Label::new(egui::RichText::new(text).color(t.text)).selectable(false));
+                });
+        });
+}
+
+/// Floating frosted-glass HUD toolbar at the bottom center of the document canvas.
+/// Provides convenient quick access to page navigation, zoom percentage, fit toggle, and continuous view.
+fn floating_hud(view: &mut DocView, pages: usize, area: Rect, ui: &mut egui::Ui, t: &Tokens) {
+    if pages == 0 {
+        return;
+    }
+    // Suppress during drag-and-drop file hovering to keep the drop target badge unobscured.
+    if ui.input(|i| !i.raw.hovered_files.is_empty()) {
+        return;
+    }
+
+    egui::Area::new(egui::Id::new("floating-hud"))
+        .order(egui::Order::Middle)
+        .pivot(Align2::CENTER_BOTTOM)
+        .fixed_pos(area.center_bottom() + vec2(0.0, -16.0))
+        .show(ui.ctx(), |ui| {
+            let bg = if t.dark() { Color32::from_rgba_premultiplied(19, 25, 34, 230) } else { Color32::from_rgba_premultiplied(248, 250, 252, 235) };
+            let border =
+                if t.dark() { Color32::from_rgba_premultiplied(48, 54, 61, 200) } else { Color32::from_rgba_premultiplied(203, 213, 225, 200) };
+            egui::Frame::NONE
+                .fill(bg)
+                .stroke(Stroke::new(1.0, border))
+                .corner_radius(CornerRadius::same(18))
+                .shadow(egui::Shadow { offset: [0, 6], blur: 20, spread: 0, color: Color32::from_black_alpha(if t.dark() { 130 } else { 35 }) })
+                .inner_margin(egui::Margin::symmetric(10, 4))
+                .show(ui, |ui| {
+                    ui.horizontal_centered(|ui| {
+                        ui.spacing_mut().item_spacing.x = 4.0;
+
+                        // Prev page
+                        let can_prev = view.current > 0;
+                        if ui.add_enabled_ui(can_prev, |ui| icons::button(ui, "chevron-left", 26.0, false, tl!("Previous page"))).inner.clicked() {
+                            view.step_page(false);
+                        }
+
+                        // Page text indicator
+                        let page_label = format!("{} / {}", view.current + 1, pages);
+                        ui.add(egui::Label::new(egui::RichText::new(page_label).font(theme::medium(12.0)).color(t.text)).selectable(false));
+
+                        // Next page
+                        let can_next = view.current + 1 < pages;
+                        if ui.add_enabled_ui(can_next, |ui| icons::button(ui, "chevron-right", 26.0, false, tl!("Next page"))).inner.clicked() {
+                            view.step_page(true);
+                        }
+
+                        // Divider
+                        ui.add_space(2.0);
+                        ui.painter().vline(ui.cursor().left(), ui.max_rect().y_range().shrink(6.0), Stroke::new(1.0, t.divider));
+                        ui.add_space(4.0);
+
+                        // Zoom out
+                        if icons::button(ui, "zoom-out", 26.0, false, tl!("Zoom out")).clicked() {
+                            view.zoom_step(false);
+                        }
+
+                        // Zoom percent button: clicking resets to 100%
+                        let zoom_str = format!("{:.0}%", view.zoom * 100.0);
+                        let zoom_btn = egui::Button::new(egui::RichText::new(zoom_str).font(theme::medium(11.5)).color(t.text_muted)).frame(false);
+                        if ui.add(zoom_btn).on_hover_text(tl!("Reset zoom to 100%")).clicked() {
+                            view.set_zoom(1.0);
+                        }
+
+                        // Zoom in
+                        if icons::button(ui, "zoom-in", 26.0, false, tl!("Zoom in")).clicked() {
+                            view.zoom_step(true);
+                        }
+
+                        // Divider
+                        ui.add_space(2.0);
+                        ui.painter().vline(ui.cursor().left(), ui.max_rect().y_range().shrink(6.0), Stroke::new(1.0, t.divider));
+                        ui.add_space(4.0);
+
+                        // Fit toggle
+                        let fit_icon = if view.fit == Fit::Width { "maximize" } else { "maximize-2" };
+                        let fit_active = view.fit != Fit::None;
+                        if icons::button(ui, fit_icon, 26.0, fit_active, tl!("Toggle fit page / fit width")).clicked() {
+                            view.set_fit(if view.fit == Fit::Width { Fit::Page } else { Fit::Width });
+                        }
+
+                        // Continuous scroll toggle
+                        let cont_active = view.continuous();
+                        if icons::button(ui, "rows-3", 26.0, cont_active, tl!("Toggle continuous scrolling")).clicked() {
+                            view.set_continuous(!cont_active);
+                        }
+                    });
                 });
         });
 }
