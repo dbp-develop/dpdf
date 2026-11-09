@@ -58,6 +58,7 @@ Every time a version is updated or released:
 4. **Git Tag:** Create an annotated git tag (`git tag -a vX.Y.Z -m "dpdf vX.Y.Z"`).
 5. **Push:** Push the commit and tags to GitHub (`git push origin main --tags`).
 6. **CI Monitoring & Verification:** Monitor the GitHub Actions build workflow (`Build & Release dpdf`), wait for completion, and verify that the release is published on GitHub with all installer artifacts (`.exe`, `.msi`, `.zip`, `.dmg`) and that the `/releases/latest` API returns the new tag.
+7. **Website & GitHub Pages:** Ensure `website/` (`index.html`, styles, `js/main.js`, and `assets/`) reflects the newest design language, latest screenshots, version numbers, and download links, and verify the GitHub Pages deployment to the `gh-pages` branch completes successfully.
 
 ## Current bootstrap debt (tracked in STATUS.md)
 - `pdfcraft-render` renders through the `hayro` crate directly and inspects documents through `lopdf`. Both get replaced by `cos` / `model` / the DisplayList device (M1–M2, ADR-0004).
