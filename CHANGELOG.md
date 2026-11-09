@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.0.1] - 2026-11-09 — Complete UI/UX Redesign & Modern Design System
+
+### Added
+- **Content-First Document Canvas**:
+  - The PDF document is the visual hero with clean, distraction-free framing, smooth continuous/single-page/two-up scrolling, and deep zoom.
+- **Contextual Floating Quick Toolbar**:
+  - Draggable, dockable floating toolbar with top grab handle.
+  - Fast access to most-used tools: Select, Hand, Highlight, Note, Text edit, Sign, and Organize.
+  - Clear indigo active tool indicator and persistent preferences.
+- **Modern Home & Start Screen**:
+  - Large, welcoming drop zone with rounded dashed borders and click-to-browse trigger.
+  - Clean recent files list with page count indicators and relative timestamps.
+  - Compact recommended tools row (Organize, Comments, Fill & Sign, Protect) with zero external promos or ads.
+- **Card-Style Organize Pages Grid**:
+  - Multi-column card grid with 10 px rounded corner radii and subtle card elevation.
+  - Indigo multi-select border highlights and direct page rotation, deletion, and extraction.
+- **Categorized "All Tools" Panel**:
+  - Clear categorization into Edit, Organize, Comment, Forms & Sign, Security, Convert, and Optimize with Lucide icons.
+- **Threaded Comments Inspector**:
+  - Collapsible right inspector with author avatars, threaded discussions, reply status indicators, and comment type badges.
+- **Modern Command Palette (⌘K / Ctrl+K)**:
+  - 12 px rounded corner radius with ambient blur elevation, 38 px hit targets, and keyboard navigation across all tools.
+- **Thin Bottom Status Bar**:
+  - 32 px quiet status bar showing page jump controls, view history (back/forward), security & signature indicators, zoom presets, and layout toggles.
+- **Refined Design Tokens**:
+  - Near-neutral light (warm off-white/soft gray) and dark (deep charcoal) themes with single refined indigo accent (`#4F46E5` / `#6366F1`).
+
+---
+
 ## [2.0.0] - 2026-10-30 — Major UI Redesign & Enhanced UX
 
 ### Added

@@ -57,19 +57,45 @@ fn panel_header(ui: &mut egui::Ui, t: &Tokens, title: &str, back: bool) -> (bool
     (go_back, close)
 }
 
+struct ToolCategory {
+    name: &'static str,
+    ids: &'static [&'static str],
+}
+
+const TOOL_CATEGORIES: &[ToolCategory] = &[
+    ToolCategory { name: "Edit", ids: &["edit", "create", "combine"] },
+    ToolCategory { name: "Organize", ids: &["organize"] },
+    ToolCategory { name: "Comment", ids: &["comment", "measure"] },
+    ToolCategory { name: "Forms & Sign", ids: &["form", "fill_sign", "certificates"] },
+    ToolCategory { name: "Security", ids: &["protect", "redact"] },
+    ToolCategory { name: "Convert", ids: &["export", "scan_ocr"] },
+    ToolCategory {
+        name: "Optimize",
+        ids: &["optimize", "compare", "accessibility", "standards", "print_production", "rich_media", "custom_actions", "index"],
+    },
+];
+
 fn all_tools(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &Tokens) {
     let (_, close) = panel_header(ui, t, "All tools", false);
     if close {
         app.left_open = false;
     }
     egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
-        let shown = if app.all_tools_expanded { TOOL_GROUPS.len() } else { COLLAPSED_TOOLS.min(TOOL_GROUPS.len()) };
-        for g in &TOOL_GROUPS[..shown] {
-            if tool_row(ui, t, g).clicked() {
-                app.select_tool(g.id);
+        let shown_limit = if app.all_tools_expanded { TOOL_GROUPS.len() } else { COLLAPSED_TOOLS.min(TOOL_GROUPS.len()) };
+        let available_groups = &TOOL_GROUPS[..shown_limit];
+        for cat in TOOL_CATEGORIES {
+            let cat_groups: Vec<_> = available_groups.iter().filter(|g| cat.ids.contains(&g.id)).collect();
+            if !cat_groups.is_empty() {
+                ui.add_space(4.0);
+                widgets::section_title(ui, tl!(cat.name));
+                for g in cat_groups {
+                    if tool_row(ui, t, g).clicked() {
+                        app.select_tool(g.id);
+                    }
+                }
             }
         }
-        ui.add_space(4.0);
+        ui.add_space(8.0);
         let more = if app.all_tools_expanded { "View less" } else { "View more" };
         if ui
             .add(

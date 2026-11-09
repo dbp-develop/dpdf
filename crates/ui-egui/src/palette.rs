@@ -146,66 +146,90 @@ pub fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
     let area_response = egui::Area::new(egui::Id::new("palette"))
         .order(egui::Order::Foreground)
         .pivot(Align2::CENTER_TOP)
-        .fixed_pos(egui::pos2(screen.center().x, screen.top() + 96.0))
+        .fixed_pos(egui::pos2(screen.center().x, screen.top() + 80.0))
         .show(ctx, |ui| {
-            egui::Frame::popup(ui.style()).corner_radius(CornerRadius::same(12)).inner_margin(egui::Margin::same(10)).show(ui, |ui| {
-                ui.set_width(560.0);
-                ui.horizontal(|ui| {
-                    ui.add(icons::image("search", 18.0, t.text_muted));
-                    let r = ui.add(
-                        egui::TextEdit::singleline(&mut app.palette_query)
-                            .hint_text(tl!("Search tools and commands…"))
-                            .frame(egui::Frame::NONE)
-                            .font(theme::regular(15.0))
-                            .desired_width(f32::INFINITY),
-                    );
-                    // Enter runs the selected hit while the field is focused or relinquishing focus.
-                    if (r.has_focus() || r.lost_focus())
-                        && ui.input(|i| i.key_pressed(egui::Key::Enter))
-                        && let Some((_, h)) = hits.get(selected)
-                    {
-                        chosen = Some((h.command, h.group));
+            egui::Frame::NONE
+                .fill(t.card)
+                .stroke(Stroke::new(1.0, t.border))
+                .corner_radius(CornerRadius::same(12))
+                .shadow(egui::Shadow { offset: [0, 8], blur: 32, spread: 0, color: egui::Color32::from_black_alpha(if t.dark() { 120 } else { 40 }) })
+                .inner_margin(egui::Margin::same(12))
+                .show(ui, |ui| {
+                    ui.set_width(560.0);
+                    ui.horizontal(|ui| {
+                        icons::paint(ui, Rect::from_min_size(ui.cursor().min + vec2(2.0, 6.0), vec2(20.0, 20.0)), "search", 18.0, t.accent);
+                        ui.add_space(24.0);
+                        let r = ui.add(
+                            egui::TextEdit::singleline(&mut app.palette_query)
+                                .hint_text(tl!("Search tools and commands…"))
+                                .frame(egui::Frame::NONE)
+                                .font(theme::regular(15.0))
+                                .desired_width(f32::INFINITY),
+                        );
+                        // Enter runs the selected hit while the field is focused or relinquishing focus.
+                        if (r.has_focus() || r.lost_focus())
+                            && ui.input(|i| i.key_pressed(egui::Key::Enter))
+                            && let Some((_, h)) = hits.get(selected)
+                        {
+                            chosen = Some((h.command, h.group));
+                        }
+                        // Re-requesting existing focus interrupts native IME composition.
+                        if !r.has_focus() {
+                            r.request_focus();
+                        }
+                    });
+                    ui.add_space(6.0);
+                    ui.separator();
+                    ui.add_space(4.0);
+                    for (index, (_, h)) in hits.iter().enumerate() {
+                        let (rect, resp) = ui.allocate_exact_size(vec2(ui.available_width(), 38.0), Sense::click());
+                        let press = theme::Press::track(ui, &resp);
+                        press.wash(ui, rect, 8, index == selected);
+                        let body = rect.translate(press.offset());
+                        icons::paint(
+                            ui,
+                            Rect::from_min_size(body.min + vec2(10.0, 10.0), vec2(18.0, 18.0)),
+                            h.icon,
+                            18.0,
+                            if index == selected { t.accent } else { t.icon },
+                        );
+                        // Display is translated; matching above already considered both languages.
+                        let shown = crate::i18n::command_label(&h.label);
+                        let shown_detail = tl!(&h.detail).to_string();
+                        resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, h.ready, &shown));
+                        let fg = if h.ready { t.text } else { t.text_faint };
+                        let detail_font = theme::medium(11.5);
+                        let detail_max = (rect.width() * 0.42).clamp(0.0, 220.0);
+                        let detail = crate::widgets::fit_line(&shown_detail, detail_max, |s| crate::widgets::text_width(ui, s, &detail_font));
+                        let detail_w = crate::widgets::text_width(ui, &detail, &detail_font);
+                        let badge_rect = Rect::from_min_size(body.right_center() - vec2(detail_w + 20.0, 10.0), vec2(detail_w + 12.0, 20.0));
+                        ui.painter().rect_filled(badge_rect, CornerRadius::same(4), if index == selected { t.selected } else { t.hover });
+                        ui.painter().text(
+                            badge_rect.center(),
+                            Align2::CENTER_CENTER,
+                            detail,
+                            detail_font,
+                            if index == selected { t.accent_text } else { t.text_muted },
+                        );
+                        crate::widgets::paint_left(
+                            ui,
+                            body.left_center() + vec2(38.0, 0.0),
+                            &shown,
+                            theme::regular(13.5),
+                            fg,
+                            (rect.width() - 38.0 - detail_w - 32.0).max(0.0),
+                        );
+                        if theme::hand(resp).clicked() {
+                            chosen = Some((h.command, h.group));
+                        }
                     }
-                    // Re-requesting existing focus interrupts native IME composition.
-                    if !r.has_focus() {
-                        r.request_focus();
+                    if hits.is_empty() {
+                        ui.add_space(8.0);
+                        ui.label(egui::RichText::new(tl!("No matching tools")).color(t.text_muted));
+                        ui.add_space(8.0);
                     }
+                    ui.add_space(2.0);
                 });
-                ui.separator();
-                for (index, (_, h)) in hits.iter().enumerate() {
-                    let (rect, resp) = ui.allocate_exact_size(vec2(ui.available_width(), 36.0), Sense::click());
-                    let press = theme::Press::track(ui, &resp);
-                    press.wash(ui, rect, 6, index == selected);
-                    let body = rect.translate(press.offset());
-                    icons::paint(ui, Rect::from_min_size(body.min + vec2(8.0, 9.0), vec2(18.0, 18.0)), h.icon, 17.0, t.icon);
-                    // Display is translated; matching above already considered both languages.
-                    let shown = crate::i18n::command_label(&h.label);
-                    let shown_detail = tl!(&h.detail).to_string();
-                    resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, h.ready, &shown));
-                    let fg = if h.ready { t.text } else { t.text_faint };
-                    let detail_font = theme::regular(12.0);
-                    let detail_max = (rect.width() * 0.42).clamp(0.0, 220.0);
-                    let detail = crate::widgets::fit_line(&shown_detail, detail_max, |s| crate::widgets::text_width(ui, s, &detail_font));
-                    let detail_w = crate::widgets::text_width(ui, &detail, &detail_font);
-                    ui.painter().text(body.right_center() - vec2(10.0, 0.0), Align2::RIGHT_CENTER, detail, detail_font, t.text_faint);
-                    crate::widgets::paint_left(
-                        ui,
-                        body.left_center() + vec2(36.0, 0.0),
-                        &shown,
-                        theme::regular(13.5),
-                        fg,
-                        (rect.width() - 36.0 - detail_w - 24.0).max(0.0),
-                    );
-                    if theme::hand(resp).clicked() {
-                        chosen = Some((h.command, h.group));
-                    }
-                }
-                if hits.is_empty() {
-                    ui.label(egui::RichText::new(tl!("No matching tools")).color(t.text_muted));
-                }
-                ui.add_space(2.0);
-                let _ = Stroke::NONE;
-            });
         });
 
     ctx.data_mut(|data| {

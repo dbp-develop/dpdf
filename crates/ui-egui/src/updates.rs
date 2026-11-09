@@ -267,7 +267,7 @@ pub(crate) fn dialog(app: &mut PdfCraftApp, ctx: &egui::Context) {
             (_, DownloadState::Done(path)) => {
                 ui.label(egui::RichText::new(tl!("Update downloaded and ready to install.")).strong());
                 ui.add_space(4.0);
-                ui.label(egui::RichText::new(tl!("dpdf will close and launch the installer to update the entire application.")).color(t.text_muted));
+                ui.label(egui::RichText::new(tl!("dpdf will close, automatically install the update, and restart.")).color(t.text_muted));
                 ui.add_space(12.0);
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                     if widgets::pill_button(ui, tl!("Install & Restart"), true).clicked() {

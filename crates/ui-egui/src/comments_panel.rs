@@ -14,9 +14,6 @@ use crate::panels::Nav;
 use crate::theme::{self, Tokens};
 use crate::{icons, widgets};
 
-/// Accent bar of the selected card (11-visual-spec §3: `#0165DD`).
-const CARD_ACCENT: Color32 = Color32::from_rgb(0x01, 0x65, 0xDD);
-
 /// Reader-friendly names for annotation subtypes (the PDF names are shown in tooltips).
 pub fn subtype_label(s: &str) -> &str {
     match s {
@@ -282,12 +279,12 @@ fn card(
     let marked = is_marked(thread);
     let replies: Vec<&&Annotation> = thread.iter().filter(|r| r.state.is_none()).collect();
     let editing = view.comments.editing.as_ref().is_some_and(|(p, i, _)| (*p, *i) == key);
-    let fill = if selected { t.hover.gamma_multiply(0.7) } else { Color32::TRANSPARENT };
+    let fill = if selected { t.accent_soft } else { Color32::TRANSPARENT };
     let mut open_menu = false;
     let mut more_rect = None;
     let frame = egui::Frame::NONE
         .fill(fill)
-        .corner_radius(CornerRadius::same(6))
+        .corner_radius(CornerRadius::same(8))
         .inner_margin(egui::Margin { left: 10, right: 8, top: 10, bottom: 10 })
         .show(ui, |ui| {
             ui.set_width(ui.available_width());
@@ -413,8 +410,8 @@ fn card(
         });
     let rect = frame.response.rect;
     if selected {
-        let bar = egui::Rect::from_min_size(rect.min, vec2(4.0, rect.height()));
-        ui.painter().rect_filled(bar, CornerRadius { nw: 6, sw: 6, ne: 0, se: 0 }, CARD_ACCENT);
+        let bar = egui::Rect::from_min_size(rect.min, vec2(3.5, rect.height()));
+        ui.painter().rect_filled(bar, CornerRadius { nw: 8, sw: 8, ne: 0, se: 0 }, t.accent);
         if std::mem::take(&mut view.comments.reveal) {
             frame.response.scroll_to_me(Some(Align::Center));
         }

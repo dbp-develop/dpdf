@@ -1,6 +1,6 @@
 [package]
 name = "dpdf"
-description = "dpdf desktop app"
+description = "dpdf desktop app: modern, fast, private and completely offline PDF workbench"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

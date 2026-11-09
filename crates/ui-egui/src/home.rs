@@ -24,36 +24,51 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
         egui::Frame::NONE.inner_margin(egui::Margin { left: 36, right: 36, top: 28, bottom: 28 }).show(ui, |ui| {
             ui.label(egui::RichText::new("Welcome to dpdf").font(theme::semibold(24.0)));
             ui.label(egui::RichText::new("A fast, local, and completely offline PDF workbench.").color(t.text_muted).font(theme::regular(14.0)));
-            ui.add_space(14.0);
-
-            egui::Frame::NONE
-                .fill(t.card)
-                .stroke(Stroke::new(1.0, t.border))
-                .corner_radius(CornerRadius::same(10))
-                .inner_margin(egui::Margin::symmetric(14, 10))
-                .show(ui, |ui| {
-                    ui.set_width(ui.available_width());
-                    ui.horizontal_wrapped(|ui| {
-                        icons::paint(ui, Rect::from_min_size(ui.cursor().min + vec2(0.0, 3.0), vec2(16.0, 16.0)), "globe", 16.0, t.accent);
-                        ui.add_space(20.0);
-                        ui.label(egui::RichText::new(tl!("Direct downloads:")).font(theme::semibold(13.0)));
-                        ui.add_space(4.0);
-
-                        for (label, url) in [
-                            ("Windows .exe", "https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-setup.exe"),
-                            ("Windows .msi", "https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-windows-x64.msi"),
-                            ("Windows Portable", "https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-windows-x64-portable.zip"),
-                            ("macOS .dmg", "https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-macos-universal.dmg"),
-                            ("macOS .zip", "https://github.com/dbp-develop/dpdf/releases/download/v2.0.0/dpdf-2.0.0-macos-universal.zip"),
-                            ("Linux Versions", "https://github.com/dbp-develop/dpdf/releases/latest"),
-                        ] {
-                            if widgets::pill_button(ui, tl!(label), false).clicked() {
-                                app.open_url(url);
-                            }
-                        }
-                    });
-                });
             ui.add_space(16.0);
+
+            // Large Modern Drop Zone
+            let drop_w = ui.available_width();
+            let (drop_rect, drop_resp) = ui.allocate_exact_size(vec2(drop_w, 136.0), Sense::click());
+            drop_resp
+                .widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, tl!("Drop PDF files here to open, or click to browse")));
+            let drop_press = theme::Press::track(ui, &drop_resp);
+            card_lift(ui, &t, drop_rect, drop_press);
+            let drop_hovered = drop_resp.hovered() || ui.input(|i| !i.raw.hovered_files.is_empty());
+            let drop_fill = if drop_hovered { t.selected } else { drop_press.fill(t.card, t.hover, t.pressed) };
+            let stroke_color = if drop_hovered { t.accent } else { t.border };
+            ui.painter().rect(
+                drop_rect,
+                CornerRadius::same(12),
+                drop_fill,
+                Stroke::new(if drop_hovered { 1.5 } else { 1.0 }, stroke_color),
+                egui::StrokeKind::Inside,
+            );
+            let drop_body = drop_rect.translate(drop_press.offset());
+            icons::paint(
+                ui,
+                Rect::from_center_size(drop_body.center() - vec2(0.0, 24.0), vec2(32.0, 32.0)),
+                "file-text",
+                30.0,
+                if drop_hovered { t.accent } else { t.icon },
+            );
+            ui.painter().text(
+                drop_body.center() + vec2(0.0, 8.0),
+                Align2::CENTER_CENTER,
+                tl!("Drop PDF files here to open, or click to browse"),
+                theme::semibold(14.0),
+                if drop_hovered { t.accent_text } else { t.text },
+            );
+            ui.painter().text(
+                drop_body.center() + vec2(0.0, 28.0),
+                Align2::CENTER_CENTER,
+                tl!("Everything runs locally on your machine · 100% private & offline"),
+                theme::regular(12.0),
+                t.text_muted,
+            );
+            if theme::hand(drop_resp).clicked() {
+                app.open_dialog();
+            }
+            ui.add_space(20.0);
 
             egui::Frame::NONE
                 .fill(t.card)

@@ -4767,7 +4767,7 @@ fn notice_bar(ui: &mut egui::Ui, t: &Tokens, icon: &str, icon_color: Color32, te
 fn quick_bar(app: &mut PdfCraftApp, area: Rect, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
     let pos = area.left_top() + vec2(14.0, 14.0);
-    egui::Area::new(egui::Id::new("quick-bar")).order(egui::Order::Middle).fixed_pos(pos).show(ui.ctx(), |ui| {
+    egui::Area::new(egui::Id::new("quick-bar")).order(egui::Order::Middle).default_pos(pos).movable(true).show(ui.ctx(), |ui| {
         egui::Frame::NONE
             .fill(t.card)
             .stroke(Stroke::new(1.0, t.border))
@@ -4777,11 +4777,21 @@ fn quick_bar(app: &mut PdfCraftApp, area: Rect, ui: &mut egui::Ui) {
             .show(ui, |ui| {
                 ui.spacing_mut().item_spacing.y = 2.0;
                 ui.vertical(|ui| {
+                    let (handle_rect, _) = ui.allocate_exact_size(vec2(32.0, 6.0), Sense::hover());
+                    ui.painter().rect_filled(Rect::from_center_size(handle_rect.center(), vec2(16.0, 2.0)), CornerRadius::same(1), t.border);
                     if icons::button(ui, "mouse-pointer-2", 32.0, app.quick_tool == QuickTool::Select, tl!("Select (V)")).clicked() {
                         app.quick_tool = QuickTool::Select;
                     }
                     if icons::button(ui, "hand", 32.0, app.quick_tool == QuickTool::Hand, tl!("Hand (H)")).clicked() {
                         app.quick_tool = QuickTool::Hand;
+                    }
+                    if let Some(i) = app.active {
+                        let is_org = app.views.get(i).is_some_and(|v| v.organize);
+                        if icons::button(ui, "layout-grid", 32.0, is_org, tl!("Organize pages")).clicked() {
+                            if let Some(v) = app.views.get_mut(i) {
+                                v.organize = !v.organize;
+                            }
+                        }
                     }
                     // Comment ▸, Highlight ▸, Draw ▸ (Acrobat's comment toolbar groups). Clicking a
                     // group selects its last-used tool; clicking it again opens the flyout.
@@ -5176,12 +5186,23 @@ fn organize_grid(view: &mut DocView, info: &DocInfo, editable: bool, dirty: bool
                 let pr = grid_page_rect(c, vec2(p.width, p.height));
                 let size = pr.size();
                 let selected = view.selected.contains(&i) || (view.selected.is_empty() && i == view.current);
-                if selected || resp.hovered() {
-                    ui.painter().rect_filled(c.shrink(6.0), CornerRadius::same(8), if selected { t.accent_soft } else { t.hover });
-                }
-                if view.selected.contains(&i) {
-                    ui.painter().rect_stroke(c.shrink(6.0), CornerRadius::same(8), Stroke::new(1.5, t.accent), egui::StrokeKind::Inside);
-                }
+                let card_rect = c.shrink(6.0);
+                let card_fill = if view.selected.contains(&i) {
+                    t.accent_soft
+                } else if resp.hovered() || selected {
+                    t.hover
+                } else {
+                    t.card
+                };
+                ui.painter().rect_filled(card_rect, CornerRadius::same(10), card_fill);
+                let card_stroke = if view.selected.contains(&i) {
+                    Stroke::new(2.0, t.accent)
+                } else if resp.hovered() {
+                    Stroke::new(1.0, t.accent_text.gamma_multiply(0.5))
+                } else {
+                    Stroke::new(1.0, t.border)
+                };
+                ui.painter().rect_stroke(card_rect, CornerRadius::same(10), card_stroke, egui::StrokeKind::Inside);
                 ui.painter().rect_filled(pr.translate(vec2(0.0, 1.5)), CornerRadius::same(1), t.page_shadow);
                 ui.painter().rect_filled(pr, CornerRadius::ZERO, Color32::WHITE);
                 // A page drawn larger than its thumbnail gets a render at the size drawn, while

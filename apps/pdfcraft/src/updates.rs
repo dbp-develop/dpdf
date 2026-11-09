@@ -100,10 +100,33 @@ pub fn launch_installer(path: &std::path::Path) -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
         let is_msi = path.extension().and_then(|s| s.to_str()).is_some_and(|ext| ext.eq_ignore_ascii_case("msi"));
+        let current_exe = std::env::current_exe().unwrap_or_default();
+        let exe_dir = current_exe.parent().unwrap_or(std::path::Path::new(""));
+        let exe_dir_str = exe_dir.to_string_lossy().to_string();
+        let current_exe_str = current_exe.to_string_lossy().to_string();
+
         if is_msi {
-            std::process::Command::new("msiexec").arg("/i").arg(path).spawn().map_err(|e| format!("could not launch msi installer ({e})"))?;
+            std::process::Command::new("msiexec")
+                .args(["/i", path.to_str().unwrap_or_default(), "/qn", "/norestart"])
+                .spawn()
+                .map_err(|e| format!("could not launch msi installer ({e})"))?;
         } else {
-            std::process::Command::new(path).spawn().map_err(|e| format!("could not launch installer ({e})"))?;
+            // Check if installed in user space (e.g. LocalAppData) vs system-wide (Program Files)
+            let is_user_install = exe_dir_str.to_lowercase().contains("appdata") || !exe_dir_str.to_lowercase().contains("program files");
+            let scope_flag = if is_user_install { "/CURRENTUSER" } else { "/ALLUSERS" };
+
+            let mut cmd = std::process::Command::new(path);
+            cmd.args(["/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/CLOSEAPPLICATIONS", "/FORCECLOSEAPPLICATIONS", scope_flag]);
+            if !exe_dir_str.is_empty() {
+                cmd.arg(format!("/DIR={exe_dir_str}"));
+            }
+            cmd.spawn().map_err(|e| format!("could not launch installer ({e})"))?;
+        }
+
+        // Relaunch the updated application after the installer finishes writing files
+        if !current_exe_str.is_empty() {
+            let relaunch_script = format!("ping 127.0.0.1 -n 4 > nul & start \"\" \"{}\"", current_exe_str);
+            let _ = std::process::Command::new("cmd").args(["/C", &relaunch_script]).spawn();
         }
         std::process::exit(0);
     }

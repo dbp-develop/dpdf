@@ -792,6 +792,170 @@ pub fn right_rail(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
         });
 }
 
+/// The modern status bar at the bottom: page navigation, security & form status, zoom & view modes.
+pub fn status_bar(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
+    let t = Tokens::get(ui.ctx());
+    let Some((index, id)) = app.active_ids() else { return };
+    let Some(doc) = app.session.get(id) else { return };
+    let page_count = doc.info.pages.len();
+    let labels: Vec<String> = doc.info.pages.iter().map(|p| p.label.clone()).collect();
+    let view = &mut app.views[index];
+    let mut page_display = None;
+
+    egui::Panel::bottom("status_bar")
+        .resizable(false)
+        .exact_size(32.0)
+        .frame(egui::Frame::NONE.fill(t.chrome).inner_margin(egui::Margin::symmetric(12, 0)).stroke(Stroke::new(1.0, t.divider)))
+        .show(ui, |ui| {
+            ui.horizontal_centered(|ui| {
+                ui.spacing_mut().item_spacing.x = 4.0;
+
+                // Page Navigation: previous / next / input
+                let tip = crate::commands::key_tip(ui.ctx(), tl!("Previous view ({key})"), crate::commands::PREV_VIEW);
+                let _ = ui.add_enabled_ui(!view.back.is_empty(), |ui| {
+                    if icons::button(ui, "chevron-left", 24.0, false, &tip).clicked() {
+                        view.view_history(false);
+                    }
+                });
+
+                if icons::button(ui, "chevron-up", 24.0, false, tl!("Previous page")).clicked() {
+                    view.step_page(false);
+                }
+
+                let page_input_id = view.page_input_id();
+                let reselect = std::mem::take(&mut view.page_input_reselect);
+                if !ui.memory(|m| m.has_focus(page_input_id)) {
+                    view.page_input = view.current_page_label(labels.get(view.current).map(String::as_str));
+                } else if reselect {
+                    let mut state = egui::TextEdit::load_state(ui.ctx(), page_input_id).unwrap_or_default();
+                    let end = egui::text::CCursor::new(view.page_input.chars().count());
+                    state.cursor.set_char_range(Some(egui::text::CCursorRange::two(egui::text::CCursor::new(0), end)));
+                    state.store(ui.ctx(), page_input_id);
+                }
+                let edit = egui::TextEdit::singleline(&mut view.page_input)
+                    .id(page_input_id)
+                    .desired_width(32.0)
+                    .horizontal_align(Align::Center)
+                    .font(theme::medium(11.5))
+                    .margin(vec2(2.0, 2.0));
+                let r = egui::Frame::NONE
+                    .fill(t.field)
+                    .stroke(Stroke::new(1.0, t.border))
+                    .corner_radius(CornerRadius::same(4))
+                    .show(ui, |ui| ui.add(edit))
+                    .inner;
+                if r.lost_focus() {
+                    if ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                        let typed = view.page_input.clone();
+                        view.go_to_typed(&typed, &labels);
+                    }
+                    view.page_input = view.current_page_label(labels.get(view.current).map(String::as_str));
+                }
+                ui.label(egui::RichText::new(format!("/ {page_count}")).font(theme::regular(12.0)).color(t.text_muted));
+
+                if icons::button(ui, "chevron-down", 24.0, false, tl!("Next page")).clicked() {
+                    view.step_page(true);
+                }
+
+                let tip = crate::commands::key_tip(ui.ctx(), tl!("Next view ({key})"), crate::commands::NEXT_VIEW);
+                let _ = ui.add_enabled_ui(!view.forward.is_empty(), |ui| {
+                    if icons::button(ui, "chevron-right", 24.0, false, &tip).clicked() {
+                        view.view_history(true);
+                    }
+                });
+
+                ui.add_space(8.0);
+                ui.painter().vline(ui.cursor().left(), ui.max_rect().y_range().shrink(8.0), Stroke::new(1.0, t.divider));
+                ui.add_space(8.0);
+
+                // Center status badges
+                if doc.security_summary().is_some() {
+                    icons::paint(ui, Rect::from_min_size(ui.cursor().min + vec2(0.0, 5.0), vec2(14.0, 14.0)), "lock", 13.0, t.accent);
+                    ui.add_space(18.0);
+                    ui.label(egui::RichText::new(tl!("Protected")).font(theme::medium(11.5)).color(t.text_muted));
+                    ui.add_space(8.0);
+                }
+                if !doc.info.fields.is_empty() {
+                    icons::paint(ui, Rect::from_min_size(ui.cursor().min + vec2(0.0, 5.0), vec2(14.0, 14.0)), "text-cursor-input", 13.0, t.accent);
+                    ui.add_space(18.0);
+                    ui.label(egui::RichText::new(tl!("Interactive Form")).font(theme::medium(11.5)).color(t.text_muted));
+                    ui.add_space(8.0);
+                }
+                if doc.is_signed() {
+                    icons::paint(ui, Rect::from_min_size(ui.cursor().min + vec2(0.0, 5.0), vec2(14.0, 14.0)), "signature", 13.0, t.accent);
+                    ui.add_space(18.0);
+                    ui.label(egui::RichText::new(tl!("Signed")).font(theme::medium(11.5)).color(t.text_muted));
+                    ui.add_space(8.0);
+                }
+
+                // Right controls: Zoom and Layout
+                ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
+                    ui.spacing_mut().item_spacing.x = 4.0;
+
+                    let tip = crate::commands::key_tip(ui.ctx(), tl!("Zoom in ({key})"), crate::commands::ZOOM_IN);
+                    if icons::button(ui, "zoom-in", 26.0, false, &tip).clicked() {
+                        view.zoom_step(true);
+                    }
+
+                    // Zoom level button
+                    let zoom_label = format!("{:.0}%", view.zoom * 100.0);
+                    let resp = ui.add(egui::Button::new(egui::RichText::new(zoom_label).font(theme::medium(11.5)).color(t.text)).frame(false));
+                    egui::Popup::menu(&resp).show(|ui| {
+                        ui.set_min_width(140.0);
+                        if ui.button(tl!("Actual size (100%)")).clicked() {
+                            view.set_zoom(1.0);
+                            ui.close();
+                        }
+                        if ui.button(tl!("Fit to width")).clicked() {
+                            view.fit = Fit::Width;
+                            ui.close();
+                        }
+                        if ui.button(tl!("Fit to page")).clicked() {
+                            view.fit = Fit::Page;
+                            ui.close();
+                        }
+                        ui.separator();
+                        for (pct, val) in [("50%", 0.5), ("75%", 0.75), ("100%", 1.0), ("125%", 1.25), ("150%", 1.5), ("200%", 2.0), ("300%", 3.0)] {
+                            if ui.button(pct).clicked() {
+                                view.set_zoom(val);
+                                ui.close();
+                            }
+                        }
+                    });
+
+                    let tip = crate::commands::key_tip(ui.ctx(), tl!("Zoom out ({key})"), crate::commands::ZOOM_OUT);
+                    if icons::button(ui, "zoom-out", 26.0, false, &tip).clicked() {
+                        view.zoom_step(false);
+                    }
+
+                    let fit_icon = if view.fit == Fit::Width { "maximize" } else { "maximize-2" };
+                    if icons::button(ui, fit_icon, 26.0, false, tl!("Toggle fit page / fit width")).clicked() {
+                        view.fit = if view.fit == Fit::Width { Fit::Page } else { Fit::Width };
+                        view.goto = Some((view.current, 0.0));
+                    }
+
+                    let tip = crate::i18n::fmt(tl!("Page display: {layout}"), &[("layout", tl!(view.layout.label()))]);
+                    let resp = icons::button(ui, view.layout.icon(), 26.0, false, &tip);
+                    page_display = egui::Popup::menu(&resp)
+                        .show(|ui| {
+                            ui.set_min_width(220.0);
+                            rail_view_menu(ui, view)
+                        })
+                        .and_then(|r| r.inner);
+
+                    let tip = crate::commands::key_tip(ui.ctx(), tl!("Rotate view clockwise ({key})"), crate::commands::ROTATE_CW);
+                    if icons::button(ui, "rotate-cw", 26.0, false, &tip).clicked() {
+                        view.rotate_view(true);
+                    }
+                });
+            });
+        });
+
+    if let Some(id) = page_display {
+        app.execute(id);
+    }
+}
+
 /// View ▸ Page display and the rail's Page display menu: the layouts and the cover page.
 /// Returns the command a click asks for, for the caller to run.
 fn page_display_menu(ui: &mut egui::Ui, view: &DocView) -> Option<&'static str> {

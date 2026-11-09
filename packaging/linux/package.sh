@@ -54,9 +54,9 @@ echo "==> PdfCraft $VERSION$LABEL_SUFFIX for Linux $ARCH ($FORMATS)"
 
 if [ "$SKIP_BUILD" = 0 ]; then
   if [ -n "${CROSS_TARGET:-}" ]; then
-    (cd "$ROOT" && cargo build --release --locked -p pdfcraft -p pdfcraft-cli --target "$CROSS_TARGET")
+    (cd "$ROOT" && cargo build --release --locked -p dpdf -p dpdf-cli --target "$CROSS_TARGET")
   else
-    (cd "$ROOT" && cargo build --release --locked -p pdfcraft -p pdfcraft-cli)
+    (cd "$ROOT" && cargo build --release --locked -p dpdf -p dpdf-cli)
   fi
 fi
 BIN="$CARGO_TARGET_DIR/${CROSS_TARGET:+$CROSS_TARGET/}release"
@@ -65,9 +65,16 @@ STAGE="$WORK/root"
 rm -rf "$WORK"
 
 # ---- stage an FHS tree (shared by every format) -------------------------------------------------
-install -Dm755 "$BIN/pdfcraft" "$STAGE/usr/bin/pdfcraft"
-install -Dm755 "$BIN/pdfcraft-cli" "$STAGE/usr/bin/pdfcraft-cli"
-"${CROSS_COMPILE:-}strip" "$STAGE/usr/bin/pdfcraft" "$STAGE/usr/bin/pdfcraft-cli" 2>/dev/null || true
+APP_BIN="$BIN/dpdf"
+[ -f "$APP_BIN" ] || APP_BIN="$BIN/pdfcraft"
+CLI_BIN="$BIN/dpdf-cli"
+[ -f "$CLI_BIN" ] || CLI_BIN="$BIN/pdfcraft-cli"
+
+install -Dm755 "$APP_BIN" "$STAGE/usr/bin/dpdf"
+ln -sf "dpdf" "$STAGE/usr/bin/pdfcraft"
+install -Dm755 "$CLI_BIN" "$STAGE/usr/bin/dpdf-cli"
+ln -sf "dpdf-cli" "$STAGE/usr/bin/pdfcraft-cli"
+"${CROSS_COMPILE:-}strip" "$STAGE/usr/bin/dpdf" "$STAGE/usr/bin/dpdf-cli" 2>/dev/null || true
 install -Dm644 "$HERE/$APP_ID.desktop" "$STAGE/usr/share/applications/$APP_ID.desktop"
 install -Dm644 "$HERE/$APP_ID.mime.xml" "$STAGE/usr/share/mime/packages/$APP_ID.xml"
 mkdir -p "$STAGE/usr/share/metainfo"
@@ -94,20 +101,31 @@ if has tar; then
   mkdir -p "$WORK/tar"
   cp -R "$STAGE/usr" "$WORK/tar/$BASENAME"
   tar -C "$WORK/tar" -czf "$DIST/$BASENAME.tar.gz" "$BASENAME"
-  echo "wrote $DIST/$BASENAME.tar.gz"
+  # Also write dpdf-branded tarball
+  DPDF_BASENAME="dpdf-$VERSION$LABEL_SUFFIX-linux-$ARCH"
+  cp -R "$STAGE/usr" "$WORK/tar/$DPDF_BASENAME"
+  tar -C "$WORK/tar" -czf "$DIST/$DPDF_BASENAME.tar.gz" "$DPDF_BASENAME"
+  echo "wrote $DIST/$DPDF_BASENAME.tar.gz and $DIST/$BASENAME.tar.gz"
 fi
 
 # ---- CLI-only .tar.gz ---------------------------------------------------------------------------
-# The stripped pdfcraft-cli (and its opt-in MCP server) with the licences, for machines that never
+# The stripped dpdf-cli (and its opt-in MCP server) with the licences, for machines that never
 # open a window. Like the other formats it needs glibc >= the build host's.
 if has cli; then
   CLI_NAME="pdfcraft-cli-$VERSION$LABEL_SUFFIX-linux-$ARCH"
+  DPDF_CLI_NAME="dpdf-cli-$VERSION$LABEL_SUFFIX-linux-$ARCH"
   CLI_DIR="$WORK/cli/$CLI_NAME"
   mkdir -p "$CLI_DIR"
-  cp "$STAGE/usr/bin/pdfcraft-cli" "$CLI_DIR/"
+  cp "$STAGE/usr/bin/dpdf-cli" "$CLI_DIR/dpdf-cli"
+  ln -sf "dpdf-cli" "$CLI_DIR/pdfcraft-cli"
   copy_docs "$CLI_DIR"
   tar -C "$WORK/cli" -czf "$DIST/$CLI_NAME.tar.gz" "$CLI_NAME"
-  echo "wrote $DIST/$CLI_NAME.tar.gz"
+  # Also write dpdf-cli branded archive
+  DPDF_CLI_DIR="$WORK/cli/$DPDF_CLI_NAME"
+  mkdir -p "$DPDF_CLI_DIR"
+  cp -R "$CLI_DIR"/* "$DPDF_CLI_DIR/"
+  tar -C "$WORK/cli" -czf "$DIST/$DPDF_CLI_NAME.tar.gz" "$DPDF_CLI_NAME"
+  echo "wrote $DIST/$DPDF_CLI_NAME.tar.gz and $DIST/$CLI_NAME.tar.gz"
 fi
 
 # ---- .deb / .rpm --------------------------------------------------------------------------------
