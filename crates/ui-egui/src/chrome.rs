@@ -1,4 +1,4 @@
-//! Window chrome: tab strip (with the integrated macOS title bar), mode bar, right rail.
+//! Window chrome: tab strip (with the integrated macOS title bar), workspace bar, navigation rail.
 
 use egui::{Align, Align2, Color32, CornerRadius, Layout, Rect, Sense, Stroke, vec2};
 
@@ -70,7 +70,8 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                 }
                 // Search, theme, help, overflow, and the desktop's window buttons stay
                 // outside the scrolling tabs.
-                let controls_width = 3.0 * button + SEARCH_WIDTH + 24.0 + window_controls::width(&controls.right);
+                let doc_actions = if app.active.is_none() { 3.0 * button } else { 0.0 };
+                let controls_width = 3.0 * button + doc_actions + SEARCH_WIDTH + 24.0 + window_controls::width(&controls.right);
                 // Open stays in sight after the tabs: its icon, text and padding, and the gaps around it.
                 let open_width = ui.fonts_mut(|f| f.layout_no_wrap(tl!("Open").into(), theme::medium(13.0), t.text).size().x) + 38.0 + 12.0;
                 let mut tabs_width = (ui.available_width() - controls_width - open_width).max(0.0);
@@ -305,6 +306,18 @@ pub fn tab_strip(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                     if widgets::search_box(ui, tl!("Find tools and commands"), SEARCH_WIDTH, search_h).clicked() {
                         app.palette_open = true;
                     }
+                    // With a document these live on the workspace bar. On Home they stay
+                    // here, disabled, so a document action cannot take focus.
+                    if app.active.is_none() {
+                        ui.add_enabled_ui(false, |ui| {
+                            let tip = crate::commands::command_tip(ui.ctx(), tl!("Document properties ({key})"), "file.properties");
+                            let _ = icons::button(ui, "info", button, false, &tip);
+                            let tip = crate::commands::command_tip(ui.ctx(), tl!("Save ({key})"), "file.save");
+                            let _ = icons::button(ui, "save", button, false, &tip);
+                            let tip = crate::commands::command_tip(ui.ctx(), tl!("Print ({key})"), "print.dialog");
+                            let _ = icons::button(ui, "printer", button, false, &tip);
+                        });
+                    }
                 });
             });
         });
@@ -507,6 +520,8 @@ fn tab(
 
 pub fn mode_bar(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
+    // One workspace row: where you are working, then the tools for that work.
+    // It is shown only with a document open. Home is the page, not this bar.
     egui::Panel::top("mode_bar")
         .exact_size(40.0)
         .frame(egui::Frame::NONE.fill(t.titlebar).inner_margin(egui::Margin::symmetric(12, 0)).stroke(Stroke::new(1.0, t.divider)))
@@ -520,10 +535,16 @@ pub fn mode_bar(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
                         app.switch_mode(mode, true);
                     }
                 }
+                // Read mode hides the tools (#2646). They stay out of the page either way.
+                if app.mode != Mode::Read {
+                    ui.add_space(6.0);
+                    ui.separator();
+                    ui.add_space(6.0);
+                    crate::canvas::quick_tools(app, ui);
+                }
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                     ui.spacing_mut().item_spacing.x = 4.0;
-                    let has_doc = app.active.is_some();
-                    ui.add_enabled_ui(has_doc, |ui| {
+                    ui.add_enabled_ui(app.active.is_some(), |ui| {
                         let tip = crate::commands::command_tip(ui.ctx(), tl!("Print ({key})"), "print.dialog");
                         if icons::button(ui, "printer", 32.0, false, &tip).clicked() {
                             app.run_command("print.dialog");
@@ -651,11 +672,9 @@ pub fn right_rail(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
     );
     let page_count = doc.info.pages.len();
     let labels: Vec<String> = doc.info.pages.iter().map(|p| p.label.clone()).collect();
-    // Read mode: the icon rail sits on the left (thumbnails, bookmarks, inspector
-    // toggles) and the open pane stays on the right. Other modes keep the rail on
-    // the right, beside the tools panel.
-    let read_nav = app.mode == Mode::Read;
-    let panel = if read_nav { egui::Panel::left("nav_rail") } else { egui::Panel::right("rail") };
+    // A narrow rail on the left: pages, bookmarks, comments and the rest.
+    // The tools catalogue is not this rail. It opens only when asked.
+    let panel = egui::Panel::left("nav_rail");
     panel
         .resizable(false)
         .exact_size(48.0)

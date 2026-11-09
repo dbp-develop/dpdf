@@ -292,6 +292,10 @@ fn marking_while_searching_does_not_jitter_or_reset_search_state() {
 fn layouts_fit_height_labels_and_system_theme() {
     use pdfcraft_ui_egui::canvas::{Fit, PageLayout};
     let mut h = harness();
+    // The tools column is closed by default, which makes a fit-width page too tall
+    // for the second row to stay on screen. Open it so this checks the layout, not the chrome.
+    h.state_mut().set_option("left", "open").unwrap();
+    h.run_steps(4);
     h.state_mut().active = Some(0);
     // Fit height: the page's height fills the view (less the margins).
     h.state_mut().views[0].fit = Fit::Height;
@@ -807,6 +811,8 @@ fn drag(h: &mut Harness<'static, PdfCraftApp>, a: egui::Pos2, b: egui::Pos2) {
 #[test]
 fn marquee_zoom_and_snapshot() {
     let mut h = harness();
+    h.state_mut().set_option("left", "open").unwrap();
+    h.run_steps(4);
     let i = h.state().active.unwrap();
     // Text "Page 2 pages PAGE" sits at y 150 (of 300) from x 20.
     let r = h.state().views[i].page_screen_rect(0).expect("on screen");
@@ -1532,6 +1538,7 @@ fn picture_harness_sized(size: egui::Vec2) -> (image::RgbaImage, Harness<'static
         let mut app = PdfCraftApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("pic.pdf", None, pdf.to_vec()).unwrap();
+        app.set_option("left", "open").unwrap();
         app
     });
     h.run_steps(4);
@@ -1665,6 +1672,7 @@ fn a_picture_inside_form_artwork_under_text_is_selected_and_copied() {
         let mut app = PdfCraftApp::new();
         app.set_option("language", "en").unwrap();
         app.open_bytes("scan.pdf", None, pdf).unwrap();
+        app.set_option("left", "open").unwrap();
         app
     });
     for _ in 0..40 {

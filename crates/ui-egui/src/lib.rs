@@ -522,7 +522,7 @@ pub struct PdfCraftApp {
     /// showing its comments or bookmarks (#1590). Remembered across restarts.
     pub right_panel_closed: bool,
     pub quick_tool: QuickTool,
-    /// The quick toolbar stays pinned to the top of the page. Remembered across restarts.
+    /// The quick toolbar stays in the workspace bar. Remembered across restarts.
     pub quick_bar_docked: bool,
     /// The tool to go back to when Space, held for a temporary Hand, is released.
     space_hand: Option<QuickTool>,
@@ -912,7 +912,7 @@ impl PdfCraftApp {
             left: LeftPanel::AllTools,
             docking: docking::Workspace::default(),
             pending_panel_reveals: Vec::new(),
-            left_open: true,
+            left_open: false,
             right: None,
             right_before_read: None,
             comments_panel_closed: false,
@@ -3251,8 +3251,11 @@ impl eframe::App for PdfCraftApp {
             window_controls::resize_edges(&ctx);
         }
         chrome::tab_strip(self, ui);
-        chrome::mode_bar(self, ui);
+        // Home is the whole window: no workspace bar, no tools column, no navigation rail.
+        // A document brings those in. The tools column stays closed until it is asked for.
+        let start = self.active.is_none() && !self.combine_showing() && self.mode != Mode::Read;
         if self.active.is_some() {
+            chrome::mode_bar(self, ui);
             chrome::status_bar(self, ui);
             chrome::right_rail(self, ui);
             // Read mode hides the tools, not the navigation panes: the rail stays visible
@@ -3266,10 +3269,19 @@ impl eframe::App for PdfCraftApp {
                     .frame(egui::Frame::NONE)
                     .show(ui, |ui| panels::right_panel(self, ui));
             }
+        } else if start && self.left_open {
+            egui::Panel::left("home_tools")
+                .resizable(true)
+                .default_size(280.0)
+                .size_range(240.0..=520.0)
+                .frame(egui::Frame::NONE)
+                .show(ui, |ui| panels::left_panel(self, ui));
         }
         let t = theme::Tokens::get(&ctx);
         egui::CentralPanel::default().frame(egui::Frame::NONE.fill(t.pasteboard)).show(ui, |ui| {
-            if self.mode == Mode::Read {
+            if start {
+                home::show(self, ui);
+            } else if self.mode == Mode::Read {
                 match self.active {
                     None if self.combine_showing() => combine_ui::page(self, ui),
                     None => home::show(self, ui),
