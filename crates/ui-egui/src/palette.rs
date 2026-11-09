@@ -14,6 +14,8 @@ struct Hit {
     detail: String,
     icon: &'static str,
     command: Option<&'static str>,
+    /// A recent file to open. Commands and tools leave this empty.
+    recent: Option<String>,
     ready: bool,
 }
 
@@ -67,6 +69,7 @@ pub fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
                         .unwrap_or_else(|| tl!(spec.menu.unwrap_or("Command")).to_string()),
                     icon: spec.icon,
                     command: Some(spec.id),
+                    recent: None,
                     ready: app.command_enabled(spec),
                 },
             ));
@@ -82,6 +85,7 @@ pub fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
                     detail: tl!("Tool").into(),
                     icon: g.icon,
                     command: None,
+                    recent: None,
                     ready: g.availability == Availability::Ready,
                 },
             ));
@@ -100,10 +104,29 @@ pub fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
                             detail: tl!(g.label).into(),
                             icon: i.icon,
                             command: Some(i.command),
+                            recent: None,
                             ready: i.availability == Availability::Ready,
                         },
                     ));
                 }
+            }
+        }
+    }
+    if !q.is_empty() {
+        for recent in &app.recent {
+            if let Some(s) = score(&recent.name, &q).or_else(|| score(&recent.path, &q)) {
+                hits.push((
+                    s,
+                    Hit {
+                        group: None,
+                        label: recent.name.clone(),
+                        detail: tl!("Recent").into(),
+                        icon: "file-text",
+                        command: None,
+                        recent: Some(recent.path.clone()),
+                        ready: true,
+                    },
+                ));
             }
         }
     }
@@ -142,7 +165,7 @@ pub fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
         app.palette_query.clear();
         return;
     }
-    let mut chosen: Option<(Option<&'static str>, Option<&'static str>)> = None;
+    let mut chosen: Option<(Option<&'static str>, Option<&'static str>, Option<String>)> = None;
     let area_response = egui::Area::new(egui::Id::new("palette"))
         .order(egui::Order::Foreground)
         .pivot(Align2::CENTER_TOP)
@@ -171,7 +194,7 @@ pub fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
                             && ui.input(|i| i.key_pressed(egui::Key::Enter))
                             && let Some((_, h)) = hits.get(selected)
                         {
-                            chosen = Some((h.command, h.group));
+                            chosen = Some((h.command, h.group, h.recent.clone()));
                         }
                         // Re-requesting existing focus interrupts native IME composition.
                         if !r.has_focus() {
@@ -220,7 +243,7 @@ pub fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
                             (rect.width() - 38.0 - detail_w - 32.0).max(0.0),
                         );
                         if theme::hand(resp).clicked() {
-                            chosen = Some((h.command, h.group));
+                            chosen = Some((h.command, h.group, h.recent.clone()));
                         }
                     }
                     if hits.is_empty() {
@@ -236,13 +259,17 @@ pub fn show(app: &mut PdfCraftApp, ctx: &egui::Context) {
         data.insert_temp(palette_rect_id, area_response.response.rect);
     });
 
-    if let Some((command, group)) = chosen {
+    if let Some((command, group, recent)) = chosen {
         app.palette_open = false;
         app.palette_query.clear();
-        if let Some(g) = group {
+        if let Some(path) = recent {
+            app.open_recent(&path);
+        } else if let Some(g) = group {
             app.select_tool(g);
-        }
-        if let Some(c) = command {
+            if let Some(c) = command {
+                app.run_command(c);
+            }
+        } else if let Some(c) = command {
             app.run_command(c);
         }
     }

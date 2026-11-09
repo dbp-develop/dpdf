@@ -290,7 +290,9 @@ fn card(
             ui.set_width(ui.available_width());
             let mut buttons_left = f32::INFINITY;
             let head = ui.horizontal(|ui| {
-                avatar(ui, t, Some(subtype_icon(&a.subtype)), None, color);
+                let who = initials(a.author.as_deref().unwrap_or("?"));
+                avatar(ui, t, None, Some(&who), color);
+                ui.add(icons::image(subtype_icon(&a.subtype), 14.0, t.text_muted));
                 let author = a.author.as_deref().map_or_else(|| tl!("Unknown author").into(), crate::bidi::visual_auto);
                 ui.label(egui::RichText::new(author).font(theme::semibold(12.5)).color(t.text));
                 if let Some(m) = &a.modified {
@@ -487,7 +489,7 @@ fn card(
 /// A 26 pt round badge: a type glyph (comments) or initials (replies).
 fn avatar(ui: &mut egui::Ui, t: &Tokens, icon: Option<&str>, text: Option<&str>, color: Color32) {
     let (r, _) = ui.allocate_exact_size(vec2(26.0, 26.0), Sense::hover());
-    let bg = if t.dark() { Color32::from_gray(0x55) } else { Color32::from_gray(0xD8) };
+    let bg = color.gamma_multiply(if t.dark() { 0.45 } else { 0.22 });
     ui.painter().circle_filled(r.center(), 12.0, bg);
     if let Some(i) = icon {
         icons::paint(ui, r, i, 13.0, legible(color, t));

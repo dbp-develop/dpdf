@@ -1,7 +1,7 @@
 //! pdfcraft-ui-egui — the first PdfCraft shell (L7).
 //!
-//! Layout grammar follows plan/acrobat/02-ui-ux.md §1: tab strip, mode bar, left tool panel,
-//! floating quick-action bar, document area, right panel + right rail with page navigation.
+//! Content-first chrome: a thin top bar (home, tabs, command search, theme, menu), a quiet
+//! mode strip, a collapsible tools panel and inspector, and a dockable quick toolbar over the page.
 //! Everything here is presentation: documents, rendering and the tool catalogue live in
 //! `pdfcraft-engine`.
 
@@ -522,6 +522,8 @@ pub struct PdfCraftApp {
     /// showing its comments or bookmarks (#1590). Remembered across restarts.
     pub right_panel_closed: bool,
     pub quick_tool: QuickTool,
+    /// The quick toolbar stays pinned to the top of the page. Remembered across restarts.
+    pub quick_bar_docked: bool,
     /// The tool to go back to when Space, held for a temporary Hand, is released.
     space_hand: Option<QuickTool>,
     /// Comment author, per-tool colours and widths, pin.
@@ -916,6 +918,7 @@ impl PdfCraftApp {
             comments_panel_closed: false,
             right_panel_closed: false,
             quick_tool: QuickTool::Select,
+            quick_bar_docked: true,
             space_hand: None,
             comment_prefs: Default::default(),
             theme: ThemeKind::Light,
@@ -2385,6 +2388,7 @@ impl PdfCraftApp {
         });
         // Set apart: one more key inside the macro above passes serde_json's recursion limit.
         v["redact_prefs"] = self.redact_defaults.to_json();
+        v["quick_bar_docked"] = serde_json::Value::Bool(self.quick_bar_docked);
         // Set outside json! above, which is at serde_json's macro recursion limit.
         v["hide_empty_highlight_hover"] = serde_json::Value::Bool(self.comment_prefs.hide_empty_highlight_hover);
         v.to_string()
@@ -2452,6 +2456,9 @@ impl PdfCraftApp {
         }
         if let Some(closed) = v["right_panel_closed"].as_bool() {
             self.right_panel_closed = closed;
+        }
+        if let Some(docked) = v["quick_bar_docked"].as_bool() {
+            self.quick_bar_docked = docked;
         }
         if let Some(defaults) = v["default_zoom"].as_str().and_then(|zoom| self.view_defaults.with_zoom(zoom)) {
             self.view_defaults = defaults;

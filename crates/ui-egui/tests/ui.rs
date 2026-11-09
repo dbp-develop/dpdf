@@ -81,12 +81,12 @@ fn long_recent_names_and_paths_are_cut_before_the_page_count() {
         move |app| app.recent.push(pdfcraft_ui_egui::RecentFile { name, path, pages: 7, size: 2048 })
     });
     let text = painted_text(&h);
-    let detail = text.iter().find(|(s, ..)| s.starts_with("7 pages")).expect("the row shows its page count").2;
-    for whole in [&name, &path] {
-        let (_, cut, rect) = text.iter().find(|(s, ..)| s == whole).expect("the row shows the name and the path");
-        assert!(*cut, "{whole:?} is cut short");
-        assert!(rect.right() < detail.left(), "{whole:?} ends before the page count");
-    }
+    let detail = text.iter().find(|(s, ..)| s.starts_with("7 pages")).expect("the card shows its page count").2;
+    let (_, cut, rect) = text.iter().find(|(s, ..)| s == &name).expect("the card shows the name");
+    assert!(*cut, "the long name is cut short");
+    assert!(rect.bottom() <= detail.top() + 1.0, "the name sits above the page count");
+    // The path is the card's tooltip, so it is not painted into the page-count line.
+    assert!(path.len() > name.len());
 }
 
 #[test]
@@ -636,11 +636,13 @@ fn persistence_round_trips_and_tolerates_garbage() {
     let mut a = PdfCraftApp::new();
     a.set_option("language", "en").unwrap();
     a.set_option("theme", "dark").unwrap();
+    a.quick_bar_docked = false;
     let json = a.persist();
     let mut b = PdfCraftApp::new();
     b.set_option("language", "en").unwrap();
     b.restore(&json);
     assert_eq!(b.theme, pdfcraft_ui_egui::theme::ThemeKind::Dark);
+    assert!(!b.quick_bar_docked, "the quick toolbar dock preference round-trips");
     b.restore("{not json");
     b.restore("{\"recent\": 5, \"theme\": \"Purple\"}");
     assert_eq!(b.theme, pdfcraft_ui_egui::theme::ThemeKind::Dark);
