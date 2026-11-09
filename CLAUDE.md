@@ -50,5 +50,14 @@ PdfCraft is a clean-room, open-source, Rust-native PDF application targeting Ado
 - For UI work, **look at the result**. Either launch `pdfcraft --control FILE doc.pdf` and use `pdfcraft-cli ui --control FILE screenshot --out x.png` (plus `inspect`, `click`, `key`, `type`, `command`, `set`), or take a headless shot with `cargo run -p pdfcraft-ui-egui --example shot`. Compare against `plan/acrobat/02-ui-ux.md`. Control-channel tests use kittest (`crates/ui-egui/tests/control.rs`).
 - Parallel agents: use a separate `CARGO_TARGET_DIR` per agent and separate git worktrees.
 
+## Version Release Protocol (Mandatory)
+Every time a version is updated or released:
+1. **Bump Version:** Update version strings across `Cargo.toml` (`[workspace.package] version`), all internal member crate dependencies, `Cargo.lock`, `packaging/windows/dpdf.iss`, `.github/workflows/build-and-release.yml`, `README.md`, and `website/`.
+2. **Changelog:** Add the release section to `CHANGELOG.md` documenting key features, bug fixes, and UX updates.
+3. **Assets:** If screenshots or assets changed, update hashes in `ATTRIBUTION.toml` and run `cargo xtask assets --write`.
+4. **Git Tag:** Create an annotated git tag (`git tag -a vX.Y.Z -m "dpdf vX.Y.Z"`).
+5. **Push:** Push the commit and tags to GitHub (`git push origin main --tags`).
+6. **CI Monitoring & Verification:** Monitor the GitHub Actions build workflow (`Build & Release dpdf`), wait for completion, and verify that the release is published on GitHub with all installer artifacts (`.exe`, `.msi`, `.zip`, `.dmg`) and that the `/releases/latest` API returns the new tag.
+
 ## Current bootstrap debt (tracked in STATUS.md)
 - `pdfcraft-render` renders through the `hayro` crate directly and inspects documents through `lopdf`. Both get replaced by `cos` / `model` / the DisplayList device (M1–M2, ADR-0004).
