@@ -67,7 +67,12 @@ jobs:
       - name: Compile Inno Setup Installer (.exe)
         shell: pwsh
         run: |
-          iscc /D"BinDir=..\..\target\windows-package\stage" /D"MyAppVersion=2.0.1" packaging/windows/dpdf.iss
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            $cmd = Get-Command iscc -ErrorAction SilentlyContinue
+            if ($cmd) { $iscc = $cmd.Source } else { $iscc = "iscc" }
+          }
+          & $iscc /D"BinDir=..\..\target\windows-package\stage" /D"MyAppVersion=2.0.1" packaging/windows/dpdf.iss
 
       - name: Set up WiX Toolset
         run: dotnet tool install --global wix --version 5.0.2
