@@ -2995,7 +2995,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README: navigation. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
-sha256 = "76c94738c1829b0394fa973ce08703398858abfac7d6bb2dd0a09a359f4c8511"
+sha256 = "f45a5d47511c914ac9d34ebc3964e26a6b73b3d5b1fd83b50d07208414edf894"
 
 [[asset]]
 path = "docs/images/pdfcraft-dark.png"
@@ -3006,7 +3006,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README: themes. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
-sha256 = "5da5cd522f3ee4d1146ec76aff5103aca052c10d38fdc764d80aff5ff651672f"
+sha256 = "55ec1aed6fa202f5c02cb0556bf3af2c53c207e172a6be2c1646e0b708b56593"
 
 [[asset]]
 path = "docs/images/pdfcraft-find.png"
@@ -3017,7 +3017,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README: search. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
-sha256 = "3832d41d6ab6dfa36b76a047876a9ac45c9c3bf88191cc061c55a2ae9eff8e7d"
+sha256 = "2c1f912e58e8785fbf2474f5871dbeecacfd42d1ebdbbc1cb7dfbd3408ae2abf"
 
 [[asset]]
 path = "docs/images/pdfcraft-forms.png"
@@ -3028,7 +3028,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README: forms. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
-sha256 = "329b6480e99ba6131d2d6e0a294db7f31534feb37fe3ba0c37fb0afa9d4d47fb"
+sha256 = "808818238c7463d26977589cd183b3306410da251c9d6caad867cba32d60ea1d"
 
 [[asset]]
 path = "docs/images/pdfcraft-layers.png"
@@ -3039,7 +3039,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README: layers. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
-sha256 = "7806a4eb9765ea1f310cb0680742cbe815dea6edaa5dde072d1e4e5489a37a43"
+sha256 = "39069a48c9395364257062b2b34acffbd4cf1340af9b47cddf868201c8e305d0"
 
 [[asset]]
 path = "docs/images/pdfcraft-organize.png"
@@ -3050,7 +3050,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README: organize. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
-sha256 = "d58b50b0c479150c2843368c3b6d436547f738776c9c6651c5be00949190117d"
+sha256 = "7b38d1f4ffa7c321b67701b1c9985f0093c4d7d21ec64131495d1c747049460b"
 
 [[asset]]
 path = "docs/images/pdfcraft-palette.png"
@@ -3061,7 +3061,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README: tools. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
-sha256 = "8ed7d48c8a7c32c22bcaec7bc0711b8e3a41c0a48646238026383d5f49aea8eb"
+sha256 = "9b71effd1013d5f252329ed0c0a8c7e2e603560650a6c3bae3ee01851dee51b7"
 
 [[asset]]
 path = "docs/images/pdfcraft-properties.png"
@@ -3072,7 +3072,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README: metadata. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
-sha256 = "6db7cdd8db4694db73343bff1ecafc510bc82309c14918883f2ef58981567f99"
+sha256 = "92c955070fa933062d0fd293b92537d85d99b590791a390faa3162862f71e03e"
 
 [[asset]]
 path = "docs/images/pdfcraft-scripts.png"
@@ -3094,7 +3094,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README: split. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
-sha256 = "e2e0ca33f5f30b5da58bef2672e504ee9dc43b476bf2b694746dd65c1fed4fe6"
+sha256 = "457c402e52068cadba46cf6d4ca4a5ba401e0373bbe30121d53c1f49ac08c539"
 
 [[asset]]
 path = "docs/images/pdfcraft-tools.png"
@@ -3105,7 +3105,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README: tool catalogue. Shows PdfCraft UI, Lucide icons, the showcase PDF built from the [[fetched]] OFL fonts, and the ArtCraft mark (Storyteller trademark from docs/brand/, not covered by this licence)"
-sha256 = "80e733595c4cf13b62feba5cf9ea000ffe0e044a5002ed27c1fed0d7370b8194"
+sha256 = "7ff5efcc5714cddbcca12e7d187654086353cc60312ff37c2c2afb8da5d1b21c"
 
 [[asset]]
 path = "docs/images/pdfcraft-twoup.png"
@@ -3116,7 +3116,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README: layouts. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
-sha256 = "e1768889b5092f494b537b575e4623d70a27e5e33536532930d530f6315d42b8"
+sha256 = "846c6066fe262c701cb35942ff13c3ca518c8b1468d5fbce70aab86586d2f2bf"
 
 [[asset]]
 path = "docs/images/pdfcraft-viewer.png"
@@ -3127,7 +3127,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "README hero. Shows only PdfCraft UI, Lucide icons and the showcase PDF built from the [[fetched]] OFL fonts"
-sha256 = "216eab1044b0241c0066334a2b4aedbee15a05298e33a06b9a0289ccf9098613"
+sha256 = "29296fff5c926bcfc985dee843c6d288dabac73f7fcefaf42768bec5f54d9f0c"
 
 [[asset]]
 path = "assets/icons/pin.svg"
@@ -3452,7 +3452,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "Website interactive hero app preview: dark reader"
-sha256 = "5da5cd522f3ee4d1146ec76aff5103aca052c10d38fdc764d80aff5ff651672f"
+sha256 = "55ec1aed6fa202f5c02cb0556bf3af2c53c207e172a6be2c1646e0b708b56593"
 
 [[asset]]
 path = "website/assets/pdfcraft-forms.png"
@@ -3463,7 +3463,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "Website feature row and hero tab: fill and sign"
-sha256 = "329b6480e99ba6131d2d6e0a294db7f31534feb37fe3ba0c37fb0afa9d4d47fb"
+sha256 = "808818238c7463d26977589cd183b3306410da251c9d6caad867cba32d60ea1d"
 
 [[asset]]
 path = "website/assets/pdfcraft-organize.png"
@@ -3474,7 +3474,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "Website feature row and hero tab: page organizer grid"
-sha256 = "d58b50b0c479150c2843368c3b6d436547f738776c9c6651c5be00949190117d"
+sha256 = "7b38d1f4ffa7c321b67701b1c9985f0093c4d7d21ec64131495d1c747049460b"
 
 [[asset]]
 path = "website/assets/pdfcraft-split.png"
@@ -3485,7 +3485,7 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "Website feature row and hero tab: split and merge"
-sha256 = "e2e0ca33f5f30b5da58bef2672e504ee9dc43b476bf2b694746dd65c1fed4fe6"
+sha256 = "457c402e52068cadba46cf6d4ca4a5ba401e0373bbe30121d53c1f49ac08c539"
 
 [[asset]]
 path = "website/assets/pdfcraft-viewer.png"
@@ -3496,4 +3496,4 @@ licence = "MIT OR Apache-2.0"
 licence_file = "LICENSE-MIT"
 kind = "image"
 usage = "Website interactive hero tab: two-page spread viewer"
-sha256 = "216eab1044b0241c0066334a2b4aedbee15a05298e33a06b9a0289ccf9098613"
+sha256 = "29296fff5c926bcfc985dee843c6d288dabac73f7fcefaf42768bec5f54d9f0c"
