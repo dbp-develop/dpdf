@@ -72,7 +72,7 @@ jobs:
             $cmd = Get-Command iscc -ErrorAction SilentlyContinue
             if ($cmd) { $iscc = $cmd.Source } else { $iscc = "iscc" }
           }
-          & $iscc /D"BinDir=..\..\target\windows-package\stage" /D"MyAppVersion=2.0.1" packaging/windows/dpdf.iss
+          & $iscc '/DBinDir=..\..\target\windows-package\stage' '/DMyAppVersion=2.0.1' packaging/windows/dpdf.iss
 
       - name: Set up WiX Toolset
         run: dotnet tool install --global wix --version 5.0.2

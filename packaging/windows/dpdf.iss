@@ -34,7 +34,7 @@ ChangesAssociations=yes
 ;  - "Install for me only" (no admin rights required, %LOCALAPPDATA%\Programs\dpdf)
 ;  - "Install for all users" (requests admin UAC approval, Program Files\dpdf)
 PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=commandline,dialog
+PrivilegesRequiredOverridesAllowed=dialog
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
