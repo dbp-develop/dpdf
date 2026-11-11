@@ -3251,14 +3251,12 @@ impl eframe::App for PdfCraftApp {
             window_controls::resize_edges(&ctx);
         }
         chrome::tab_strip(self, ui);
-        // Home is the whole window: no workspace bar, no tools column, no navigation rail.
-        // A document brings those in. The tools column stays closed until it is asked for.
+        // The sidebar is the product navigation. The tools column stays closed until asked for.
         let start = self.active.is_none() && !self.combine_showing() && self.mode != Mode::Read;
+        chrome::studio(self, ui);
         if self.active.is_some() {
-            chrome::mode_bar(self, ui);
             chrome::status_bar(self, ui);
-            chrome::right_rail(self, ui);
-            // Read mode hides the tools, not the navigation panes: the rail stays visible
+            // Read mode hides the tools, not the navigation panes: the sidebar stays visible
             // there, so its buttons (Bookmarks, Page thumbnails, ...) must open their panels.
             // Outside Read mode the docking workspace draws the inspector.
             if self.mode == Mode::Read && self.right.is_some() {

@@ -55,20 +55,9 @@ pub fn show(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
             ui.add_space(side);
             ui.vertical(|ui| {
                 ui.set_width(column);
-                ui.add_space(48.0);
-                // The start page is the product. Tools stay behind one button until asked for.
-                ui.horizontal(|ui| {
-                    ui.label(egui::RichText::new("Welcome to dpdf").font(theme::semibold(28.0)).color(t.text));
-                    if !app.left_open {
-                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                            if ui.button(tl!("All tools")).clicked() {
-                                app.left = crate::LeftPanel::AllTools;
-                                app.left_open = true;
-                            }
-                        });
-                    }
-                });
-                ui.add_space(22.0);
+                ui.add_space(36.0);
+                ui.label(egui::RichText::new("Welcome to dpdf").font(theme::semibold(28.0)).color(t.text));
+                ui.add_space(18.0);
 
                 let drop_w = ui.available_width();
                 let (drop_rect, drop_resp) = ui.allocate_exact_size(vec2(drop_w, 220.0), Sense::click());

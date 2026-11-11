@@ -4669,13 +4669,13 @@ fn notice_bar(ui: &mut egui::Ui, t: &Tokens, icon: &str, icon_color: Color32, te
     });
 }
 
-/// Select, Hand, comments and Fill & Sign. They sit in the workspace bar above the page,
+/// Select, Hand, comments and Fill & Sign. They wrap in the product sidebar,
 /// so a drag on the document never starts on a toolbar button.
 pub(crate) fn quick_tools(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
     let docked = app.quick_bar_docked;
-    ui.horizontal(|ui| {
-        ui.spacing_mut().item_spacing.x = 2.0;
+    ui.horizontal_wrapped(|ui| {
+        ui.spacing_mut().item_spacing = vec2(2.0, 4.0);
         let dock_tip = if docked { tl!("Float toolbar") } else { tl!("Dock toolbar") };
         let dock_icon = if docked { "pin" } else { "move" };
         if icons::button(ui, dock_icon, 32.0, docked, dock_tip).clicked() {

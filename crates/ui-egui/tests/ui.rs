@@ -1228,14 +1228,14 @@ fn long_german_tool_labels_stay_within_the_sidebar() {
     h.run_steps(4);
     let heading =
         painted_text(&h).into_iter().find(|(s, ..)| s.starts_with("Ausfüllen und")).expect("translated heading is painted, whole or elided");
-    // The navigation rail is 48 px on the left, then the 280 px tools column.
-    assert!(heading.2.right() <= 320.0, "translated heading runs past the sidebar: {:?}", heading.2);
+    // The product sidebar is 248 px, then the 280 px tools column.
+    assert!(heading.2.right() <= 520.0, "translated heading runs past the sidebar: {:?}", heading.2);
     // A long sub-tool name must stop before its status chip, not paint over the PDF.
     h.state_mut().left = LeftPanel::Tool("protect");
     h.run_steps(4);
     let item =
         painted_text(&h).into_iter().find(|(s, ..)| s == "Ausgeblendete Informationen entfernen").expect("long translated sub-tool is painted");
-    assert!(item.2.right() <= 320.0, "translated tool item runs past the sidebar: {:?}", item.2);
+    assert!(item.2.right() <= 520.0, "translated tool item runs past the sidebar: {:?}", item.2);
 }
 
 #[test]
