@@ -2511,3 +2511,5 @@ animation effects	Off	Vypnuto
 	Dock toolbar	Připnout panel nástrojů
 	Float toolbar	Uvolnit panel nástrojů
 	Drop a PDF or click to open	Přetáhněte PDF nebo kliknutím otevřete
+	Save your changes before installing the update. dpdf has to close to replace itself.	Před instalací aktualizace uložte změny. dpdf se musí zavřít, aby se nahradil.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	Aktualizace se nenainstalovala (kód ukončení instalátoru {code}). Protokol instalace je v {log}.

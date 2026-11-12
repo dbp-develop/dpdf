@@ -2413,3 +2413,5 @@ animation effects	Off	Wyłączone
 	Dock toolbar	Zadokuj pasek narzędzi
 	Float toolbar	Odepnij pasek narzędzi
 	Drop a PDF or click to open	Upuść PDF lub kliknij, aby otworzyć
+	Save your changes before installing the update. dpdf has to close to replace itself.	Zapisz zmiany przed zainstalowaniem aktualizacji. dpdf musi się zamknąć, aby zastąpić siebie.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	Aktualizacja nie została zainstalowana (kod zakończenia instalatora {code}). Dziennik instalacji jest w {log}.

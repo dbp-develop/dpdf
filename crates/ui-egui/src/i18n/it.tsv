@@ -2649,3 +2649,5 @@ certificate	SHA-256 digest	Impronta SHA-256
 	Dock toolbar	Aggancia la barra degli strumenti
 	Float toolbar	Sgancia la barra degli strumenti
 	Drop a PDF or click to open	Rilascia un PDF o fai clic per aprire
+	Save your changes before installing the update. dpdf has to close to replace itself.	Salva le modifiche prima di installare l'aggiornamento. dpdf deve chiudersi per sostituire se stesso.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	L'aggiornamento non è stato installato (codice di uscita del programma di installazione {code}). Il registro dell'installazione si trova in {log}.

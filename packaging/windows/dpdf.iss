@@ -30,11 +30,15 @@ ChangesAssociations=yes
 
 ; Dual-Scope Installation:
 ; 'lowest' means default to current user without admin rights.
-; 'dialog' gives the user the choice between:
+; The wizard offers:
 ;  - "Install for me only" (no admin rights required, %LOCALAPPDATA%\Programs\dpdf)
 ;  - "Install for all users" (requests admin UAC approval, Program Files\dpdf)
+; 'commandline' lets the in-app updater pass /CURRENTUSER or /ALLUSERS while
+; silent. Without it those switches are rejected, and /VERYSILENT hides the error,
+; so a per-user update exits before it writes any files.
+; The AppId below is also read by apps/pdfcraft/src/updates.rs (uninstall key).
 PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
+PrivilegesRequiredOverridesAllowed=dialog commandline
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

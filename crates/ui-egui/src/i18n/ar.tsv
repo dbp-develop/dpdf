@@ -2714,3 +2714,5 @@ certificate	Version	الإصدار
 	Dock toolbar	إرساء شريط الأدوات
 	Float toolbar	تحرير شريط الأدوات
 	Drop a PDF or click to open	أفلت ملف PDF أو انقر للفتح
+	Save your changes before installing the update. dpdf has to close to replace itself.	احفظ تغييراتك قبل تثبيت التحديث. يجب أن يُغلق dpdf ليحل محل نفسه.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	لم يُثبَّت التحديث (رمز خروج المُثبّت {code}). سجل الإعداد موجود في {log}.

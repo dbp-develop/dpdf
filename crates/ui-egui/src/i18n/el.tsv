@@ -2443,3 +2443,5 @@ animation effects	Off	Ανενεργά
 	Dock toolbar	Αγκύρωση γραμμής εργαλείων
 	Float toolbar	Αποδέσμευση γραμμής εργαλείων
 	Drop a PDF or click to open	Αποθέστε ένα PDF ή κάντε κλικ για άνοιγμα
+	Save your changes before installing the update. dpdf has to close to replace itself.	Αποθηκεύστε τις αλλαγές σας πριν εγκαταστήσετε την ενημέρωση. Το dpdf πρέπει να κλείσει για να αντικαταστήσει τον εαυτό του.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	Η ενημέρωση δεν εγκαταστάθηκε (κωδικός εξόδου του προγράμματος εγκατάστασης {code}). Το αρχείο καταγραφής της εγκατάστασης βρίσκεται στο {log}.
