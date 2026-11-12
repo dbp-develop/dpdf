@@ -3756,34 +3756,36 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     view.viewport_screen = out.inner_rect;
     if unobstructed && doc.allows_assembly() && ui.input(|i| !i.raw.hovered_files.is_empty()) {
         let pointer = ui.input(|i| i.pointer.hover_pos().or_else(|| i.pointer.latest_pos()));
-        if let Some(p) = pointer {
+        if let Some(p) = pointer
+            && view.viewport_screen.contains(p)
+            && let Some(at) = insert_after_page(&view.screen_rects, p)
+        {
             let vp = view.viewport_screen;
-            let on_page_bottom = view.screen_rects.iter().any(|(_, r)| {
-                let bottom_start = r.min.y + r.height() * 0.70;
-                p.y >= bottom_start && p.y <= r.max.y + 60.0 && (r.min.x - 40.0..=r.max.x + 40.0).contains(&p.x)
-            });
-            let below_last_page = view.screen_rects.last().is_some_and(|(_, r)| p.y >= r.max.y - 30.0 && p.y <= vp.max.y + 30.0);
-            let in_viewport_bottom = p.y >= vp.min.y + vp.height() * 0.75 && p.y <= vp.max.y + 30.0;
-            if (on_page_bottom || below_last_page || in_viewport_bottom) && vp.contains(p) {
-                let painter = ui.painter().with_clip_rect(vp);
-                let y = if let Some((_, r)) = view.screen_rects.iter().find(|(_, r)| {
-                    let bottom_start = r.min.y + r.height() * 0.70;
-                    p.y >= bottom_start && p.y <= r.max.y + 60.0
-                }) {
-                    (r.max.y + 4.0).min(vp.max.y - 12.0)
-                } else if let Some((_, r)) = view.screen_rects.last() {
-                    (r.max.y + 4.0).min(vp.max.y - 12.0)
+            let painter = ui.painter().with_clip_rect(vp);
+            let after = at.saturating_sub(1);
+            let y = view
+                .screen_rects
+                .iter()
+                .find(|(i, _)| *i == after)
+                .map(|(_, r)| (r.max.y + 2.0).clamp(vp.min.y + 12.0, vp.max.y - 12.0))
+                .unwrap_or(p.y);
+            let x_min = (vp.min.x + 20.0).max(view.screen_rects.iter().map(|(_, r)| r.min.x).reduce(f32::min).unwrap_or(vp.min.x + 20.0));
+            let x_max = (vp.max.x - 20.0).min(view.screen_rects.iter().map(|(_, r)| r.max.x).reduce(f32::max).unwrap_or(vp.max.x - 20.0));
+            if x_max > x_min {
+                painter.line_segment([pos2(x_min, y), pos2(x_max, y)], Stroke::new(3.0, t.accent));
+                let badge = if at >= info.pages.len() {
+                    tl!("Insert a file at the end").to_string()
                 } else {
-                    vp.max.y - 16.0
+                    let label = info.pages.get(at).map(|page| page.label.as_str()).filter(|s| !s.is_empty()).unwrap_or("");
+                    let label = if label.is_empty() { (at.saturating_add(1)).to_string() } else { label.to_string() };
+                    crate::i18n::fmt(tl!("Insert a file before page {label}"), &[("label", &label)])
                 };
-                let x_min = (vp.min.x + 20.0).max(view.screen_rects.iter().map(|(_, r)| r.min.x).reduce(f32::min).unwrap_or(vp.min.x + 20.0));
-                let x_max = (vp.max.x - 20.0).min(view.screen_rects.iter().map(|(_, r)| r.max.x).reduce(f32::max).unwrap_or(vp.max.x - 20.0));
-                if x_max > x_min {
-                    painter.line_segment([pos2(x_min, y), pos2(x_max, y)], Stroke::new(3.0, t.accent));
-                    let badge_rect = Rect::from_center_size(pos2((x_min + x_max) / 2.0, y), vec2(160.0, 22.0));
-                    painter.rect_filled(badge_rect, CornerRadius::same(11), t.accent);
-                    painter.text(badge_rect.center(), Align2::CENTER_CENTER, tl!("Add to end of PDF"), theme::semibold(11.0), Color32::WHITE);
-                }
+                let font = theme::semibold(11.0);
+                let text_w = ui.fonts_mut(|f| f.layout_no_wrap(badge.clone(), font.clone(), Color32::WHITE).size().x);
+                let badge_w = (text_w + 16.0).min((x_max - x_min).max(16.0));
+                let badge_rect = Rect::from_center_size(pos2((x_min + x_max) / 2.0, y), vec2(badge_w, 22.0));
+                painter.rect_filled(badge_rect, CornerRadius::same(11), t.accent);
+                painter.text(badge_rect.center(), Align2::CENTER_CENTER, badge, font, Color32::WHITE);
             }
         }
     }
@@ -4943,6 +4945,52 @@ fn organize_toolbar(view: &mut DocView, info: &DocInfo, editable: bool, dirty: b
     }
 }
 
+/// Where a file dropped at `p` is inserted while reading: after the page whose bottom
+/// edge, or the gap under it, contains `p`. The result is a page index (`0` would be
+/// before the first page; this only returns positions after a page). `None` when `p`
+/// is on the body of a page, or nowhere near one.
+pub(crate) fn insert_after_page(pages: &[(usize, Rect)], p: Pos2) -> Option<usize> {
+    if pages.is_empty() || !p.is_finite() {
+        return None;
+    }
+    let mut ordered: Vec<(usize, Rect)> = pages.iter().copied().filter(|(_, r)| r.is_positive()).collect();
+    ordered.sort_by(|a, b| a.0.cmp(&b.0).then_with(|| a.1.min.y.total_cmp(&b.1.min.y)).then_with(|| a.1.min.x.total_cmp(&b.1.min.x)));
+    // The gutter between two pages of a spread: after the earlier page.
+    for pair in ordered.windows(2) {
+        let (ai, a) = pair[0];
+        let (bi, b) = pair[1];
+        if bi != ai.saturating_add(1) {
+            continue;
+        }
+        let y0 = a.min.y.max(b.min.y);
+        let y1 = a.max.y.min(b.max.y);
+        if y1 - y0 < 8.0 {
+            continue;
+        }
+        let (left, right) = if a.max.x <= b.min.x + 1.0 {
+            (a, b)
+        } else if b.max.x <= a.min.x + 1.0 {
+            (b, a)
+        } else {
+            continue;
+        };
+        if p.x >= left.max.x && p.x <= right.min.x && p.y >= y0 && p.y <= y1 {
+            return Some(ai.saturating_add(1));
+        }
+    }
+    // The bottom strip of a page, and the gap under it down to the next page.
+    for (idx, (page, r)) in ordered.iter().enumerate() {
+        let band = (r.height() * 0.30).clamp(8.0, 80.0).min(r.height());
+        let top = r.max.y - band;
+        let next = ordered.get(idx + 1).filter(|(n, nr)| *n == page.saturating_add(1) && nr.min.y + 4.0 >= r.max.y);
+        let bottom = next.map(|(_, nr)| nr.min.y).unwrap_or(r.max.y + 72.0);
+        if p.x >= r.min.x - 48.0 && p.x <= r.max.x + 48.0 && p.y >= top && p.y <= bottom {
+            return Some(page.saturating_add(1));
+        }
+    }
+    None
+}
+
 /// Organize pages: a thumbnail grid (Acrobat's Organize Pages view). Click selects, ⌘-click
 /// toggles, ⇧-click extends; double-click opens the page.
 /// The gap (0 = before the first page, n = after the last) the pointer points at in the grid.
@@ -5356,6 +5404,31 @@ mod tests {
         assert_eq!(anchored_scroll(pos2(150.0, 800.0), vec2(100.0, 100.0), content, viewport), vec2(50.0, 700.0));
         // Content smaller than the viewport: no scrolling.
         assert_eq!(anchored_scroll(pos2(400.0, 400.0), Vec2::ZERO, vec2(500.0, 500.0), viewport), vec2(0.0, 0.0));
+    }
+
+    #[test]
+    fn a_file_dropped_on_a_page_bottom_or_the_gap_under_it_inserts_after_that_page() {
+        // Page 3 (index 2) then page 4, stacked, with a gap between them.
+        let page3 = Rect::from_min_max(pos2(100.0, 40.0), pos2(400.0, 340.0));
+        let page4 = Rect::from_min_max(pos2(100.0, 360.0), pos2(400.0, 660.0));
+        let pages = [(2, page3), (3, page4)];
+        // The bottom strip of page 3.
+        assert_eq!(insert_after_page(&pages, pos2(200.0, 330.0)), Some(3));
+        // The gap between page 3 and page 4.
+        assert_eq!(insert_after_page(&pages, pos2(200.0, 350.0)), Some(3));
+        // The body of page 3 is not a drop target.
+        assert_eq!(insert_after_page(&pages, pos2(200.0, 120.0)), None);
+        // The bottom of page 4, with nothing after it, inserts at the end.
+        assert_eq!(insert_after_page(&pages, pos2(200.0, 650.0)), Some(4));
+        assert_eq!(insert_after_page(&pages, pos2(200.0, 700.0)), Some(4));
+        // Beside the page, and an empty list.
+        assert_eq!(insert_after_page(&pages, pos2(20.0, 330.0)), None);
+        assert_eq!(insert_after_page(&[], pos2(200.0, 330.0)), None);
+        // A spread: the gutter between page 3 and page 4 inserts after page 3.
+        let left = Rect::from_min_max(pos2(40.0, 80.0), pos2(240.0, 400.0));
+        let right = Rect::from_min_max(pos2(260.0, 80.0), pos2(460.0, 400.0));
+        assert_eq!(insert_after_page(&[(2, left), (3, right)], pos2(250.0, 200.0)), Some(3));
+        assert_eq!(insert_after_page(&[(2, left), (3, right)], pos2(400.0, 390.0)), Some(4));
     }
 
     #[test]

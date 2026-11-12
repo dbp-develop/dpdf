@@ -1504,8 +1504,8 @@ impl PdfCraftApp {
         }
     }
 
-    /// When a document is open, files dropped at the bottom of the page (or bottom of the viewport)
-    /// append their pages to the end of the open document. Returns files not consumed.
+    /// When a document is open, files dropped on the bottom of a page, or in the gap after it,
+    /// insert all of their pages there. The pages that followed shift down. Returns files not consumed.
     #[cfg(not(target_arch = "wasm32"))]
     fn drop_on_page_bottom(&mut self, dropped: Vec<egui::DroppedFileHandle>, ctx: &egui::Context) -> Vec<egui::DroppedFileHandle> {
         if dropped.is_empty() {
@@ -1533,44 +1533,33 @@ impl PdfCraftApp {
         };
 
         let vp = view.viewport_screen();
-        if !vp.is_positive() {
+        if !vp.is_positive() || !vp.contains(p) {
             return dropped;
         }
-        let in_x = p.x >= vp.min.x - 40.0 && p.x <= vp.max.x + 40.0;
-        if !in_x {
+        let Some(at) = crate::canvas::insert_after_page(view.screen_rects(), p) else {
+            return dropped;
+        };
+        let count = doc.info.pages.len();
+        let mut files = Vec::new();
+        for f in &dropped {
+            let name = f.path().file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "dropped.pdf".into());
+            if f.path().is_absolute() {
+                files.push((name, Err(f.path().to_path_buf())));
+                continue;
+            }
+            match f.bytes() {
+                Ok(b) => files.push((name, Ok(b))),
+                Err(e) => self.notify_fmt("Couldn't read {name}: {e}", &[("name", &name), ("e", &e)]),
+            }
+        }
+        if files.is_empty() {
             return dropped;
         }
-
-        let on_page_bottom = view.screen_rects().iter().any(|(_, r)| {
-            let bottom_start = r.min.y + r.height() * 0.70;
-            p.y >= bottom_start && p.y <= r.max.y + 60.0 && (r.min.x - 40.0..=r.max.x + 40.0).contains(&p.x)
-        });
-        let below_last_page = view.screen_rects().last().is_some_and(|(_, r)| p.y >= r.max.y - 30.0 && p.y <= vp.max.y + 30.0);
-        let in_viewport_bottom = p.y >= vp.min.y + vp.height() * 0.75 && p.y <= vp.max.y + 30.0;
-
-        if on_page_bottom || below_last_page || in_viewport_bottom {
-            let mut files = Vec::new();
-            for f in &dropped {
-                let name = f.path().file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "dropped.pdf".into());
-                if f.path().is_absolute() {
-                    files.push((name, Err(f.path().to_path_buf())));
-                    continue;
-                }
-                match f.bytes() {
-                    Ok(b) => files.push((name, Ok(b))),
-                    Err(e) => self.notify_fmt("Couldn't read {name}: {e}", &[("name", &name), ("e", &e)]),
-                }
-            }
-            if !files.is_empty() {
-                let count = self.session.get(id).map_or(0, |d| d.info.pages.len());
-                let view = &mut self.views[active_idx];
-                view.insert_at = Some(count);
-                self.insert_each(files.into_iter().map(read_grid_file));
-                ctx.request_repaint();
-                return Vec::new();
-            }
-        }
-        dropped
+        let view = &mut self.views[active_idx];
+        view.insert_at = Some(at.min(count));
+        self.insert_each(files.into_iter().map(read_grid_file));
+        ctx.request_repaint();
+        Vec::new()
     }
 
     /// Browsers read dropped files asynchronously; the bytes land in `inbox` and open next frame.

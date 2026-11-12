@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.0] - 2026-11-12 — Insert pages by dropping a PDF
+
+### Added
+- **Insert pages where you drop them.** Drop a PDF on the bottom of a page, or in the gap after that page, and every page of the dropped file is inserted there. The pages that followed shift down. On page 3 of a 10-page document, dropping a 2-page PDF makes those pages 4 and 5, and the old page 4 becomes page 6. A line and a label show the insertion point while the file is over the page. Dropping on the body of a page still opens that file on its own.
+- **Product sidebar.** Workspaces, document navigation, and the quick tools live in one labeled column. The page is the stage: no mode ribbon and no icon rail.
+
+---
+
 ## [2.0.1] - 2026-11-09 — Complete UI/UX Redesign & Modern Design System
 
 ### Added

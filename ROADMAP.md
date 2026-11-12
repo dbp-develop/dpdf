@@ -2,6 +2,8 @@
 
 **Stage: alpha** · next: beta, ~25% (ready for real work 50% → 75%) and ~400–700 h away
 
+> **Last reviewed:** 2026-11-12 · **Last updated:** 2026-11-12 · **Change:** minor (v2.1.0: dropping a PDF on the bottom of a page, or in the gap after it, inserts every page of that file there; estimates unchanged)
+
 > **Last reviewed:** 2026-11-11 · **Last updated:** 2026-11-11 · **Change:** minor (desktop shell: a labeled product sidebar holds workspaces, document navigation and quick tools; the page has no mode ribbon or icon rail; estimates unchanged)
 
 > **Last reviewed:** 2026-11-09 · **Last updated:** 2026-11-09 · **Change:** minor (desktop shell: full-bleed start page, tools column closed until asked, left navigation rail, workspace bar holds the quick tools off the page; estimates unchanged)
