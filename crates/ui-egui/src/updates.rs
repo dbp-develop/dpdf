@@ -93,6 +93,8 @@ pub(crate) struct Updates {
     pub(crate) consented: bool,
     /// The Updates dialog is showing.
     pub(crate) open: bool,
+    /// Why Install & Restart did not start, shown in the dialog.
+    pub(crate) launch_error: Option<String>,
 }
 
 impl PdfCraftApp {
@@ -102,6 +104,16 @@ impl PdfCraftApp {
         self.updates.consented = false;
         self.updates.check = Check::Idle;
         self.updates.download = DownloadState::Idle;
+        self.updates.launch_error = None;
+    }
+
+    /// The installer finished with a failure code. `log` is the setup log the helper wrote.
+    pub fn notify_update_failed(&mut self, code: i32, log: &str) {
+        let code = code.to_string();
+        self.notify(crate::i18n::fmt(
+            tl!("The update did not install (installer exit code {code}). The setup log is in {log}."),
+            &[("code", code.as_str()), ("log", log)],
+        ));
     }
 
     /// User consented to connect online: start the background release check thread.
@@ -268,11 +280,16 @@ pub(crate) fn dialog(app: &mut PdfCraftApp, ctx: &egui::Context) {
                 ui.label(egui::RichText::new(tl!("Update downloaded and ready to install.")).strong());
                 ui.add_space(4.0);
                 ui.label(egui::RichText::new(tl!("dpdf will close, automatically install the update, and restart.")).color(t.text_muted));
+                if let Some(err) = &app.updates.launch_error {
+                    ui.add_space(8.0);
+                    ui.label(egui::RichText::new(err).color(t.text_muted));
+                }
                 ui.add_space(12.0);
                 ui.with_layout(Layout::right_to_left(Align::Center), |ui| {
                     if widgets::pill_button(ui, tl!("Install & Restart"), true).clicked() {
+                        // The installer replaces this executable. Whether that is safe is decided
+                        // after this dialog finishes borrowing the download path.
                         launch_path = Some(path.clone());
-                        close = true;
                     }
                     if widgets::pill_button(ui, tl!("Later"), false).clicked() {
                         close = true;
@@ -409,10 +426,18 @@ pub(crate) fn dialog(app: &mut PdfCraftApp, ctx: &egui::Context) {
     if let Some(url) = open_url {
         app.open_url(&url);
     }
-    if let Some(path) = launch_path
-        && let Some(launcher) = &app.installer_launcher
-    {
-        let _ = launcher(&path);
+    if let Some(path) = launch_path {
+        // The installer replaces this executable, so unsaved work would be lost.
+        if app.first_dirty().is_some() {
+            app.updates.launch_error = Some(tl!("Save your changes before installing the update. dpdf has to close to replace itself.").to_string());
+        } else {
+            app.updates.launch_error = None;
+            if let Some(launcher) = app.installer_launcher.clone()
+                && let Err(e) = launcher(&path)
+            {
+                app.updates.launch_error = Some(e);
+            }
+        }
     }
     if close {
         app.updates.open = false;

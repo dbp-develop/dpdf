@@ -2346,3 +2346,5 @@ animation effects	Off	ఆఫ్
 	Dock toolbar	టూల్‌బార్‌ను అమర్చు
 	Float toolbar	టూల్‌బార్‌ను తేలించు
 	Drop a PDF or click to open	PDFను వదలండి లేదా తెరవడానికి క్లిక్ చేయండి
+	Save your changes before installing the update. dpdf has to close to replace itself.	నవీకరణను ఇన్‌స్టాల్ చేయడానికి ముందు మీ మార్పులను సేవ్ చేయండి. dpdf తనను తాను భర్తీ చేయడానికి మూసుకోవాలి.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	నవీకరణ ఇన్‌స్టాల్ కాలేదు (ఇన్‌స్టాలర్ నిష్క్రమణ కోడ్ {code}). సెటప్ లాగ్ {log} లో ఉంది.

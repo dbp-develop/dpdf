@@ -2451,3 +2451,5 @@ animation effects	Off	Desativados
 	Dock toolbar	Encaixar a barra de ferramentas
 	Float toolbar	Soltar a barra de ferramentas
 	Drop a PDF or click to open	Solte um PDF ou clique para abrir
+	Save your changes before installing the update. dpdf has to close to replace itself.	Salve suas alterações antes de instalar a atualização. O dpdf precisa fechar para se substituir.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	A atualização não foi instalada (código de saída do instalador {code}). O registro da instalação está em {log}.

@@ -2400,3 +2400,5 @@ animation effects	Off	Изключени
 	Dock toolbar	Закачане на лентата с инструменти
 	Float toolbar	Освобождаване на лентата с инструменти
 	Drop a PDF or click to open	Пуснете PDF или щракнете, за да отворите
+	Save your changes before installing the update. dpdf has to close to replace itself.	Запазете промените си, преди да инсталирате актуализацията. dpdf трябва да се затвори, за да се замени.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	Актуализацията не беше инсталирана (код за изход на инсталатора {code}). Дневникът на инсталатора е в {log}.

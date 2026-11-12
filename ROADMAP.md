@@ -2,6 +2,8 @@
 
 **Stage: alpha** · next: beta, ~25% (ready for real work 50% → 75%) and ~400–700 h away
 
+> **Last reviewed:** 2026-11-12 · **Last updated:** 2026-11-12 · **Change:** minor (Windows in-app update: a silent per-user install is allowed on the command line, waits until setup exits, and records a failed exit code; estimates unchanged)
+
 > **Last reviewed:** 2026-11-12 · **Last updated:** 2026-11-12 · **Change:** minor (v2.1.0: dropping a PDF on the bottom of a page, or in the gap after it, inserts every page of that file there; estimates unchanged)
 
 > **Last reviewed:** 2026-11-11 · **Last updated:** 2026-11-11 · **Change:** minor (desktop shell: a labeled product sidebar holds workspaces, document navigation and quick tools; the page has no mode ribbon or icon rail; estimates unchanged)
@@ -179,6 +181,8 @@ Ranked; detail and the full milestone table in [docs/roadmap.md](docs/roadmap.md
 | 8 | 1.0 polish: performance, right-to-left, missing languages, keyboard-only (M14) | 55–95 |
 
 ## Progress log
+
+- **2026-11-12:** Windows in-app update. A silent per-user install failed because the setup script only allowed the scope choice in the wizard, so `/CURRENTUSER` was rejected and `/VERYSILENT` hid the error. The script now accepts `/CURRENTUSER` and `/ALLUSERS` on the command line. The updater chooses the scope from the install that contains the running program, clears the download mark, and starts dpdf again only after setup exits. A failed exit code is shown on the next launch, with Inno's log beside it. Estimates unchanged.
 
 - **2026-10-19 (M14, #3373):** The main menu and its long submenus scroll in short windows, keeping their commands reachable. Estimates unchanged.
 
