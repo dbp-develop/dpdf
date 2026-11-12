@@ -2,6 +2,8 @@
 
 **Stage: alpha** · next: beta, ~25% (ready for real work 50% → 75%) and ~400–700 h away
 
+> **Last reviewed:** 2026-11-12 · **Last updated:** 2026-11-12 · **Change:** minor (Windows, macOS and the other release packages ship the OCR model files beside the app; a placeholder models folder is no longer enough; estimates unchanged)
+
 > **Last reviewed:** 2026-11-12 · **Last updated:** 2026-11-12 · **Change:** minor (v2.1.0: dropping a PDF on the bottom of a page, or in the gap after it, inserts every page of that file there; estimates unchanged)
 
 > **Last reviewed:** 2026-11-11 · **Last updated:** 2026-11-11 · **Change:** minor (desktop shell: a labeled product sidebar holds workspaces, document navigation and quick tools; the page has no mode ribbon or icon rail; estimates unchanged)
@@ -179,6 +181,8 @@ Ranked; detail and the full milestone table in [docs/roadmap.md](docs/roadmap.md
 | 8 | 1.0 polish: performance, right-to-left, missing languages, keyboard-only (M14) | 55–95 |
 
 ## Progress log
+
+- **2026-11-12:** Recognize Text. The published installers shipped a models folder with a note in it and not `text-detection.rten` or `text-recognition.rten`, so OCR said the models were missing for a per-user Windows install and for the other packages from that build. The release build now downloads the models, refuses to package without those two files, and puts them beside the app (Windows setup and MSI, portable zip, macOS bundle, and the Linux and FreeBSD packages). Other tools do not load a separate module; they are in the program itself. Estimates unchanged.
 
 - **2026-10-19 (M14, #3373):** The main menu and its long submenus scroll in short windows, keeping their commands reachable. Estimates unchanged.
 

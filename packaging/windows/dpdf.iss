@@ -49,8 +49,13 @@ Source: "{#BinDir}\dpdf-cli.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BinDir}\NOTICE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BinDir}\LICENSE-MIT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BinDir}\LICENSE-APACHE"; DestDir: "{app}"; Flags: ignoreversion
-; OCR Models if present
-Source: "..\..\target\windows-package\models\*"; DestDir: "{app}\models"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
+; OCR models, beside dpdf.exe for both "for me only" and "for everyone".
+; The two model files are required. skipifsourcedoesntexist would build an
+; installer whose Recognize Text says the models are missing.
+Source: "..\..\target\windows-package\models\text-detection.rten"; DestDir: "{app}\models"; Flags: ignoreversion
+Source: "..\..\target\windows-package\models\text-recognition.rten"; DestDir: "{app}\models"; Flags: ignoreversion
+Source: "..\..\target\windows-package\models\ATTRIBUTION.txt"; DestDir: "{app}\models"; Flags: ignoreversion
+Source: "..\..\target\windows-package\models\*.LICENCE.txt"; DestDir: "{app}\models"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

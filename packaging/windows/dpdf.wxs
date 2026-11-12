@@ -160,8 +160,11 @@
       </Component>
     </ComponentGroup>
 
+    <!-- text-detection.rten and text-recognition.rten, beside dpdf.exe. The release build
+         fetches them before this runs; an empty folder is not a successful package. -->
     <ComponentGroup Id="DpdfModels" Directory="ModelsFolder">
-      <Files Include="$(var.ModelsDir)\*" />
+      <Files Include="$(var.ModelsDir)\*.rten" />
+      <Files Include="$(var.ModelsDir)\*.txt" />
     </ComponentGroup>
   </Fragment>
 </Wix>

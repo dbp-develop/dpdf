@@ -73,9 +73,13 @@ deliberately.
 `stage_models` (`packaging/env.sh`; `package.ps1` on Windows), which runs `cargo xtask models` to
 fetch every `kind = "model"` file in `ATTRIBUTION.toml` (verified by SHA-256) with its licence text
 and an `ATTRIBUTION.txt`, straight into the package, so packaging needs the network. They go where
-`pdfcraft_ocr::Models::dirs_beside_exe` looks: `models\` beside `pdfcraft.exe` (MSI, portable zip),
-`PdfCraft.app/Contents/Resources/models` (macOS), and `share/pdfcraft/models` beside `bin/`
-(deb, rpm, tar.gz, AppImage, Flatpak, FreeBSD). The web build doesn't include them yet.
+`pdfcraft_ocr::Models::dirs_beside_exe` looks: `models\` beside the executable (MSI, setup and
+portable zip, for a per-user install and for an all-users install), `Contents/Resources/models`
+(macOS), and `share/pdfcraft/models` beside `bin/` (deb, rpm, tar.gz, AppImage, Flatpak, FreeBSD).
+`.github/workflows/build-and-release.yml` fetches the same two files (`text-detection.rten` and
+`text-recognition.rten`) for the Windows and macOS artifacts and fails the job if either is missing
+or empty. A models folder that only contains a note is not a package. The web build doesn't include
+them yet.
 
 ### macOS
 

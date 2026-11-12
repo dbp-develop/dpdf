@@ -44,10 +44,17 @@ jobs:
           Copy-Item "$BinDir\dpdf.exe", "$BinDir\dpdf-cli.exe" $Stage
           Copy-Item "LICENSE-MIT", "LICENSE-APACHE", "NOTICE" $Stage
           Copy-Item "assets/app-icon/LICENSE-document.txt" $Stage
+          # OCR models sit in models\ beside dpdf.exe for both the per-user and the
+          # all-users install. A placeholder file is not a model: Recognize Text
+          # looks for these two files and otherwise says text recognition is not installed.
           $Models = "target/windows-package/models"
-          New-Item -ItemType Directory -Force -Path $Models | Out-Null
-          if (-not (Test-Path "$Models\ATTRIBUTION.txt")) {
-            Set-Content "$Models\ATTRIBUTION.txt" "Local OCR models"
+          cargo xtask models $Models
+          if ($LASTEXITCODE -ne 0) { throw "cargo xtask models failed" }
+          foreach ($name in @('text-detection.rten', 'text-recognition.rten', 'ATTRIBUTION.txt')) {
+            $path = Join-Path $Models $name
+            if (-not (Test-Path $path) -or (Get-Item $path).Length -le 0) {
+              throw "OCR model missing or empty: $path"
+            }
           }
 
       - name: Package Portable Version (.zip)
@@ -58,6 +65,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path $PortableDir | Out-Null
           Copy-Item "$BinDir\dpdf.exe", "$BinDir\dpdf-cli.exe" $PortableDir
           Copy-Item "LICENSE-MIT", "LICENSE-APACHE", "NOTICE", "README.md" $PortableDir
+          Copy-Item -Recurse "target/windows-package/models" (Join-Path $PortableDir "models")
           Set-Content "$PortableDir\portable.txt" "dpdf portable mode"
           Compress-Archive -Path "$PortableDir\*" -DestinationPath "dist/release/dpdf-2.1.0-windows-x64-portable.zip" -Force
 
@@ -139,6 +147,12 @@ jobs:
           if [ -f packaging/macos/Credits.rtf ]; then
             cp packaging/macos/Credits.rtf "$APP/Contents/Resources/Credits.rtf"
           fi
+          # The app looks in Contents/Resources/models (beside Contents/MacOS).
+          mkdir -p "$APP/Contents/Resources/models"
+          cargo xtask models "$APP/Contents/Resources/models"
+          for f in text-detection.rten text-recognition.rten ATTRIBUTION.txt; do
+            test -s "$APP/Contents/Resources/models/$f" || { echo "OCR model missing: $f"; exit 1; }
+          done
           sed -e "s/@VERSION@/2.1.0/g" -e "s/@SHORT_VERSION@/2.1.0/g" -e "s/@BUILD_SHA@/${{ github.sha }}/g" packaging/macos/Info.plist.in > "$APP/Contents/Info.plist"
           printf 'APPL????' > "$APP/Contents/PkgInfo"
 

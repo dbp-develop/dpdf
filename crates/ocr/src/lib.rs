@@ -54,8 +54,9 @@ impl Models {
         (m.detection.is_file() && m.recognition.is_file()).then_some(m)
     }
 
-    /// Look for the models: `$PDFCRAFT_MODELS`, then where the release packages install them
-    /// beside the executable ([`Models::dirs_beside_exe`]), then the source tree's `assets/models/`.
+    /// Look for the models: `$DPDF_MODELS`, then `$PDFCRAFT_MODELS`, then where the release
+    /// packages install them beside the executable ([`Models::dirs_beside_exe`]), then the
+    /// source tree's `assets/models/`.
     pub fn find() -> Option<Models> {
         Self::search_dirs().iter().find_map(|d| Self::in_dir(d))
     }
@@ -63,8 +64,8 @@ impl Models {
     /// The directories [`Models::find`] looks in, in order.
     pub fn search_dirs() -> Vec<PathBuf> {
         let mut dirs = Vec::new();
-        if let Some(d) = std::env::var_os("PDFCRAFT_MODELS") {
-            dirs.push(PathBuf::from(d));
+        for name in ["DPDF_MODELS", "PDFCRAFT_MODELS"] {
+            push_model_override(&mut dirs, std::env::var_os(name).as_deref());
         }
         if let Some(exe) = std::env::current_exe().ok().and_then(|e| e.parent().map(Path::to_path_buf)) {
             dirs.extend(Self::dirs_beside_exe(&exe));
@@ -81,6 +82,13 @@ impl Models {
     ///   deb/rpm/tar.gz/AppImage/Flatpak and the FreeBSD tarball, wherever they are installed.
     pub fn dirs_beside_exe(exe_dir: &Path) -> Vec<PathBuf> {
         vec![exe_dir.join("models"), exe_dir.join("../Resources/models"), exe_dir.join("../share/pdfcraft/models")]
+    }
+}
+
+/// Append one model directory from an environment variable. An unset or empty value adds nothing.
+fn push_model_override(dirs: &mut Vec<PathBuf>, value: Option<&std::ffi::OsStr>) {
+    if let Some(value) = value.filter(|value| !value.is_empty()) {
+        dirs.push(PathBuf::from(value));
     }
 }
 
@@ -349,6 +357,50 @@ mod tests {
             assert_eq!(models.detection.canonicalize().unwrap(), models_dir.join(DETECTION_MODEL).canonicalize().unwrap(), "{name}");
         }
         let _ = std::fs::remove_dir_all(&base);
+    }
+
+    /// An empty override is not a directory, and `DPDF_MODELS` is searched before `PDFCRAFT_MODELS`.
+    #[test]
+    fn model_overrides_skip_an_empty_value_and_keep_order() {
+        let mut dirs = Vec::new();
+        push_model_override(&mut dirs, Some(std::ffi::OsStr::new("")));
+        push_model_override(&mut dirs, None);
+        push_model_override(&mut dirs, Some(std::ffi::OsStr::new("dpdf-models")));
+        push_model_override(&mut dirs, Some(std::ffi::OsStr::new("pdfcraft-models")));
+        assert_eq!(dirs, vec![PathBuf::from("dpdf-models"), PathBuf::from("pdfcraft-models")]);
+    }
+
+    /// The published installers must carry the model files. A models folder that only has a
+    /// note used to be packaged, and Recognize Text then said the models were not installed
+    /// for every install, including Windows per-user.
+    #[test]
+    fn release_packages_ship_the_ocr_model_files() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let workflow = std::fs::read_to_string(root.join(".github/workflows/build-and-release.yml")).unwrap();
+        assert!(workflow.matches("cargo xtask models").count() >= 2, "Windows and macOS both fetch the models");
+        assert!(!workflow.contains("Local OCR models"), "a placeholder attribution file is not a model");
+        assert!(workflow.contains("Contents/Resources/models"), "the macOS bundle looks beside Contents/MacOS");
+        assert!(workflow.contains("Join-Path $PortableDir \"models\""), "the portable zip must include models\\");
+        for name in [DETECTION_MODEL, RECOGNITION_MODEL] {
+            assert!(workflow.contains(name), "{name} is checked before the installers are built");
+        }
+        let iss = std::fs::read_to_string(root.join("packaging/windows/dpdf.iss")).unwrap();
+        for name in [DETECTION_MODEL, RECOGNITION_MODEL] {
+            let line = iss.lines().find(|line| line.contains(name)).unwrap_or_else(|| panic!("{name} is not in the Windows setup"));
+            assert!(!line.to_ascii_lowercase().contains("skipifsourcedoesntexist"), "{line}");
+        }
+        let env = std::fs::read_to_string(root.join("packaging/env.sh")).unwrap();
+        assert!(!env.contains("local fallback"), "a failed download must not be replaced with a licence-only folder");
+        assert!(
+            std::fs::read_to_string(root.join("packaging/macos/package.sh")).unwrap().contains("stage_models"),
+            "the macOS package script must fetch the models"
+        );
+        let wxs = std::fs::read_to_string(root.join("packaging/windows/dpdf.wxs")).unwrap();
+        assert!(wxs.contains("*.rten"), "the MSI must harvest the model files, not only the notes beside them");
+        let package = std::fs::read_to_string(root.join("packaging/windows/package.ps1")).unwrap();
+        for name in [DETECTION_MODEL, RECOGNITION_MODEL] {
+            assert!(package.contains(name), "{name} must be required by the Windows packager");
+        }
     }
 
     /// The message tells end users what to do; release builds have no cargo.
