@@ -384,6 +384,12 @@ mod tests {
         for name in [DETECTION_MODEL, RECOGNITION_MODEL] {
             assert!(workflow.contains(name), "{name} is checked before the installers are built");
         }
+        let attribution = std::fs::read_to_string(root.join("ATTRIBUTION.toml")).unwrap();
+        assert_eq!(
+            attribution.matches("https://download.ui.vision/x2/ocrs/").count(),
+            2,
+            "the S3 host refuses the download; both models need the mirror that serves the same bytes"
+        );
         let iss = std::fs::read_to_string(root.join("packaging/windows/dpdf.iss")).unwrap();
         for name in [DETECTION_MODEL, RECOGNITION_MODEL] {
             let line = iss.lines().find(|line| line.contains(name)).unwrap_or_else(|| panic!("{name} is not in the Windows setup"));

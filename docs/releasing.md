@@ -82,8 +82,9 @@ portable zip, for a per-user install and for an all-users install), `Contents/Re
 (macOS), and `share/pdfcraft/models` beside `bin/` (deb, rpm, tar.gz, AppImage, Flatpak, FreeBSD).
 `.github/workflows/build-and-release.yml` fetches the same two files (`text-detection.rten` and
 `text-recognition.rten`) for the Windows and macOS artifacts and fails the job if either is missing
-or empty. A models folder that only contains a note is not a package. The web build doesn't include
-them yet.
+or empty. The original host answers 403, so each model entry also lists a mirror; the download is
+still refused unless the SHA-256 matches. A models folder that only contains a note is not a package.
+The web build doesn't include them yet.
 
 ### macOS
 
