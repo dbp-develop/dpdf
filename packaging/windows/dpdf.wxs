@@ -61,6 +61,7 @@
 
     <Feature Id="Main" Title="dpdf" Level="1">
       <ComponentGroupRef Id="DpdfFiles" />
+      <ComponentGroupRef Id="DpdfFontLicences" />
       <ComponentGroupRef Id="DpdfModels" />
     </Feature>
   </Package>
@@ -160,8 +161,16 @@
       </Component>
     </ComponentGroup>
 
+    <!-- OFL notices for the faces compiled into dpdf.exe. -->
+    <ComponentGroup Id="DpdfFontLicences" Directory="INSTALLFOLDER">
+      <Files Include="$(var.BinDir)\OFL-*.txt" />
+    </ComponentGroup>
+
+    <!-- text-detection.rten and text-recognition.rten, beside dpdf.exe. The release build
+         fetches them before this runs; an empty folder is not a successful package. -->
     <ComponentGroup Id="DpdfModels" Directory="ModelsFolder">
-      <Files Include="$(var.ModelsDir)\*" />
+      <Files Include="$(var.ModelsDir)\*.rten" />
+      <Files Include="$(var.ModelsDir)\*.txt" />
     </ComponentGroup>
   </Fragment>
 </Wix>

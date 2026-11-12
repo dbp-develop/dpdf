@@ -82,22 +82,22 @@ copy_font_licences() {
 # Fetch the OCR models into a package directory (#103): `cargo xtask models DEST` downloads every
 # ATTRIBUTION.toml `kind = "model"` file, verified by SHA-256, with its licence text and an
 # ATTRIBUTION.txt crediting them. DEST must be where pdfcraft_ocr::Models::dirs_beside_exe looks
-# from the installed executable. Nothing here names a model file, so a model added to the manifest
-# later ships without changing the packaging.
+# from the installed executable. The download still takes every model from the manifest; the
+# check below only refuses to ship without the two files Recognize Text opens.
 stage_models() {
   local dest="$1"
   mkdir -p "$dest"
   dest="$(cd "$dest" && pwd)"
-  (cd "$ROOT" && cargo xtask models "$dest") 2>/dev/null || {
-    echo "Staging local fallback OCR metadata in $dest"
-    echo "dpdf OCR models" > "$dest/ATTRIBUTION.txt"
-    echo "Permissive open-source model licence" > "$dest/models.LICENCE.txt"
-  }
+  (cd "$ROOT" && cargo xtask models "$dest")
   rm -f "$dest"/*.part
-  if ! ls "$dest"/*.LICENCE.txt >/dev/null 2>&1 || [ ! -s "$dest/ATTRIBUTION.txt" ]; then
-    echo "dpdf OCR models" > "$dest/ATTRIBUTION.txt"
-    echo "Permissive open-source model licence" > "$dest/models.LICENCE.txt"
-  fi
+  # The app treats a folder without these two files as "text recognition is not installed".
+  # A licence-only stand-in used to pass this check and ship that failure.
+  for f in text-detection.rten text-recognition.rten ATTRIBUTION.txt; do
+    if [ ! -s "$dest/$f" ]; then
+      echo "OCR model missing or empty: $dest/$f" >&2
+      exit 1
+    fi
+  done
   echo "OCR models in $dest:"
   ls -l "$dest"
 }

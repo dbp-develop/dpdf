@@ -2688,3 +2688,5 @@ theme	Appearance	Išvaizda
 	Dock toolbar	Prisegti įrankių juostą
 	Float toolbar	Atsegti įrankių juostą
 	Drop a PDF or click to open	Numeskite PDF arba spustelėkite, kad atidarytumėte
+	Save your changes before installing the update. dpdf has to close to replace itself.	Prieš diegdami naujinimą išsaugokite pakeitimus. dpdf turi užsidaryti, kad pakeistų save.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	Naujinimas nebuvo įdiegtas (diegimo programos išėjimo kodas {code}). Diegimo žurnalas yra {log}.

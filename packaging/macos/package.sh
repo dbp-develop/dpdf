@@ -107,10 +107,7 @@ cp "$ROOT/assets/app-icon/dpdf.icns" "$APP/Contents/Resources/dpdf.icns"
 cp "$HERE/Credits.rtf" "$APP/Contents/Resources/Credits.rtf"
 copy_font_licences "$APP/Contents/Resources"
 # OCR models: the app finds them at Contents/MacOS/../Resources/models.
-if [ -d "$ROOT/target/windows-package/models" ]; then
-  mkdir -p "$APP/Contents/Resources/models"
-  cp -r "$ROOT/target/windows-package/models/"* "$APP/Contents/Resources/models/" 2>/dev/null || true
-fi
+stage_models "$APP/Contents/Resources/models"
 sed -e "s/@VERSION@/$VERSION/g" -e "s/@SHORT_VERSION@/$SHORT_VERSION/g" \
   -e "s/@BUILD_SHA@/${PDFCRAFT_BUILD_SHA:-unknown}/g" \
   "$HERE/Info.plist.in" >"$APP/Contents/Info.plist"

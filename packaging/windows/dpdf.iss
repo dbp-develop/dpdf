@@ -3,7 +3,7 @@
 
 #define MyAppName "dpdf"
 #ifndef MyAppVersion
-  #define MyAppVersion "2.1.0"
+  #define MyAppVersion "2.1.1"
 #endif
 #ifndef BinDir
   #define BinDir "..\..\target\windows-package\stage"
@@ -30,11 +30,15 @@ ChangesAssociations=yes
 
 ; Dual-Scope Installation:
 ; 'lowest' means default to current user without admin rights.
-; 'dialog' gives the user the choice between:
+; The wizard offers:
 ;  - "Install for me only" (no admin rights required, %LOCALAPPDATA%\Programs\dpdf)
 ;  - "Install for all users" (requests admin UAC approval, Program Files\dpdf)
+; 'commandline' lets the in-app updater pass /CURRENTUSER or /ALLUSERS while
+; silent. Without it those switches are rejected, and /VERYSILENT hides the error,
+; so a per-user update exits before it writes any files.
+; The AppId below is also read by apps/pdfcraft/src/updates.rs (uninstall key).
 PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
+PrivilegesRequiredOverridesAllowed=dialog commandline
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -49,8 +53,15 @@ Source: "{#BinDir}\dpdf-cli.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BinDir}\NOTICE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BinDir}\LICENSE-MIT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BinDir}\LICENSE-APACHE"; DestDir: "{app}"; Flags: ignoreversion
-; OCR Models if present
-Source: "..\..\target\windows-package\models\*"; DestDir: "{app}\models"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
+; Notices for the faces compiled into dpdf.exe. The font files are inside the program.
+Source: "{#BinDir}\OFL-*.txt"; DestDir: "{app}"; Flags: ignoreversion
+; OCR models, beside dpdf.exe for both "for me only" and "for everyone".
+; The two model files are required. skipifsourcedoesntexist would build an
+; installer whose Recognize Text says the models are missing.
+Source: "..\..\target\windows-package\models\text-detection.rten"; DestDir: "{app}\models"; Flags: ignoreversion
+Source: "..\..\target\windows-package\models\text-recognition.rten"; DestDir: "{app}\models"; Flags: ignoreversion
+Source: "..\..\target\windows-package\models\ATTRIBUTION.txt"; DestDir: "{app}\models"; Flags: ignoreversion
+Source: "..\..\target\windows-package\models\*.LICENCE.txt"; DestDir: "{app}\models"; Flags: ignoreversion
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"

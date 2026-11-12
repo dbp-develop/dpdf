@@ -22,6 +22,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Compiled into dpdf.exe (not a folder beside it): Japanese, Arabic, Hebrew,
+      # Thai and Telugu faces. Noto CJK stays out (AGENTS.md §1.1). The pin is a
+      # commit, so a later craft-fonts change cannot alter a release by surprise.
+      - name: Checkout craft-fonts
+        uses: actions/checkout@v4
+        with:
+          repository: storytold/craft-fonts
+          ref: c1db6d1a8ed772191241c3d185e2104be84d8691
+          path: craft-fonts
+
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -29,8 +39,13 @@ jobs:
 
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          key: craft-fonts-c1db6d1a
 
       - name: Build dpdf binaries
+        env:
+          CRAFT_FONTS_DIR: ${{ github.workspace }}/craft-fonts
+          CRAFT_FONTS_REQUIRED: "1"
         run: |
           cargo build --release -p dpdf -p dpdf-cli --target x86_64-pc-windows-msvc
 
@@ -44,10 +59,28 @@ jobs:
           Copy-Item "$BinDir\dpdf.exe", "$BinDir\dpdf-cli.exe" $Stage
           Copy-Item "LICENSE-MIT", "LICENSE-APACHE", "NOTICE" $Stage
           Copy-Item "assets/app-icon/LICENSE-document.txt" $Stage
+          # OFL notices for the faces compiled into dpdf.exe. The font files are
+          # inside the program; the licence text still has to travel with it.
+          $fontLicences = 0
+          foreach ($dir in Get-ChildItem "craft-fonts/fonts" -Directory) {
+            $ofl = Join-Path $dir.FullName "OFL.txt"
+            if (Test-Path $ofl) {
+              Copy-Item $ofl (Join-Path $Stage ("OFL-" + $dir.Name + ".txt"))
+              $fontLicences++
+            }
+          }
+          if ($fontLicences -lt 1) { throw "no font licences copied from craft-fonts/fonts" }
+          # OCR models sit in models\ beside dpdf.exe for both the per-user and the
+          # all-users install. A placeholder file is not a model: Recognize Text
+          # looks for these two files and otherwise says text recognition is not installed.
           $Models = "target/windows-package/models"
-          New-Item -ItemType Directory -Force -Path $Models | Out-Null
-          if (-not (Test-Path "$Models\ATTRIBUTION.txt")) {
-            Set-Content "$Models\ATTRIBUTION.txt" "Local OCR models"
+          cargo xtask models $Models
+          if ($LASTEXITCODE -ne 0) { throw "cargo xtask models failed" }
+          foreach ($name in @('text-detection.rten', 'text-recognition.rten', 'ATTRIBUTION.txt')) {
+            $path = Join-Path $Models $name
+            if (-not (Test-Path $path) -or (Get-Item $path).Length -le 0) {
+              throw "OCR model missing or empty: $path"
+            }
           }
 
       - name: Package Portable Version (.zip)
@@ -58,8 +91,10 @@ jobs:
           New-Item -ItemType Directory -Force -Path $PortableDir | Out-Null
           Copy-Item "$BinDir\dpdf.exe", "$BinDir\dpdf-cli.exe" $PortableDir
           Copy-Item "LICENSE-MIT", "LICENSE-APACHE", "NOTICE", "README.md" $PortableDir
+          Copy-Item -Recurse "target/windows-package/models" (Join-Path $PortableDir "models")
+          Copy-Item "target/windows-package/stage/OFL-*.txt" $PortableDir
           Set-Content "$PortableDir\portable.txt" "dpdf portable mode"
-          Compress-Archive -Path "$PortableDir\*" -DestinationPath "dist/release/dpdf-2.1.0-windows-x64-portable.zip" -Force
+          Compress-Archive -Path "$PortableDir\*" -DestinationPath "dist/release/dpdf-2.1.1-windows-x64-portable.zip" -Force
 
       - name: Set up Inno Setup
         run: choco install innosetup --no-progress -y
@@ -72,7 +107,7 @@ jobs:
             $cmd = Get-Command iscc -ErrorAction SilentlyContinue
             if ($cmd) { $iscc = $cmd.Source } else { $iscc = "iscc" }
           }
-          & $iscc '/DBinDir=..\..\target\windows-package\stage' '/DMyAppVersion=2.1.0' packaging/windows/dpdf.iss
+          & $iscc '/DBinDir=..\..\target\windows-package\stage' '/DMyAppVersion=2.1.1' packaging/windows/dpdf.iss
 
       - name: Set up WiX Toolset
         run: dotnet tool install --global wix --version 5.0.2
@@ -86,11 +121,11 @@ jobs:
           wix build packaging/windows/dpdf.wxs `
             packaging/windows/installer-ui.wxs `
             -arch x64 `
-            -d "Version=2.1.0" `
+            -d "Version=2.1.1" `
             -d "BinDir=$Stage" `
             -d "ModelsDir=$Models" `
             -d "IconPath=$Icon" `
-            -o dist/release/dpdf-2.1.0-windows-x64.msi
+            -o dist/release/dpdf-2.1.1-windows-x64.msi
 
       - name: Upload Windows Installers
         uses: actions/upload-artifact@v4
@@ -110,6 +145,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Checkout craft-fonts
+        uses: actions/checkout@v4
+        with:
+          repository: storytold/craft-fonts
+          ref: c1db6d1a8ed772191241c3d185e2104be84d8691
+          path: craft-fonts
+
       - name: Set up Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -117,8 +159,13 @@ jobs:
 
       - name: Cache Cargo dependencies
         uses: Swatinem/rust-cache@v2
+        with:
+          key: craft-fonts-c1db6d1a
 
       - name: Build dpdf binaries for Apple Silicon and Intel
+        env:
+          CRAFT_FONTS_DIR: ${{ github.workspace }}/craft-fonts
+          CRAFT_FONTS_REQUIRED: "1"
         run: |
           cargo build --release -p dpdf -p dpdf-cli --target aarch64-apple-darwin
           cargo build --release -p dpdf -p dpdf-cli --target x86_64-apple-darwin
@@ -139,7 +186,22 @@ jobs:
           if [ -f packaging/macos/Credits.rtf ]; then
             cp packaging/macos/Credits.rtf "$APP/Contents/Resources/Credits.rtf"
           fi
-          sed -e "s/@VERSION@/2.1.0/g" -e "s/@SHORT_VERSION@/2.1.0/g" -e "s/@BUILD_SHA@/${{ github.sha }}/g" packaging/macos/Info.plist.in > "$APP/Contents/Info.plist"
+          # The app looks in Contents/Resources/models (beside Contents/MacOS).
+          mkdir -p "$APP/Contents/Resources/models"
+          cargo xtask models "$APP/Contents/Resources/models"
+          for f in text-detection.rten text-recognition.rten ATTRIBUTION.txt; do
+            test -s "$APP/Contents/Resources/models/$f" || { echo "OCR model missing: $f"; exit 1; }
+          done
+          # Same faces as the Windows build, already inside the binary. Ship their notices.
+          found=0
+          for d in craft-fonts/fonts/*/; do
+            if [ -f "${d}OFL.txt" ]; then
+              cp "${d}OFL.txt" "$APP/Contents/Resources/OFL-$(basename "$d").txt"
+              found=1
+            fi
+          done
+          test "$found" = 1 || { echo "no font licences in craft-fonts/fonts"; exit 1; }
+          sed -e "s/@VERSION@/2.1.1/g" -e "s/@SHORT_VERSION@/2.1.1/g" -e "s/@BUILD_SHA@/${{ github.sha }}/g" packaging/macos/Info.plist.in > "$APP/Contents/Info.plist"
           printf 'APPL????' > "$APP/Contents/PkgInfo"
 
           # Ad-hoc sign app bundle
@@ -149,16 +211,17 @@ jobs:
           mkdir -p dist/release target/dmg-stage
           ditto "$APP" target/dmg-stage/dpdf.app
           ln -s /Applications target/dmg-stage/Applications
-          hdiutil create -srcfolder target/dmg-stage -volname "dpdf" -fs HFS+ -format UDZO -ov "dist/release/dpdf-2.1.0-macos-universal.dmg"
+          hdiutil create -srcfolder target/dmg-stage -volname "dpdf" -fs HFS+ -format UDZO -ov "dist/release/dpdf-2.1.1-macos-universal.dmg"
 
           # Package Universal ZIPs
-          ditto -c -k --keepParent "$APP" "dist/release/dpdf-2.1.0-macos-universal.zip"
+          ditto -c -k --keepParent "$APP" "dist/release/dpdf-2.1.1-macos-universal.zip"
           mkdir -p target/cli-stage
           cp target/universal/release/dpdf-cli target/cli-stage/
           for f in README.md LICENSE-MIT LICENSE-APACHE NOTICE; do
             if [ -f "$f" ]; then cp "$f" target/cli-stage/; fi
           done
-          ditto -c -k --keepParent target/cli-stage "dist/release/dpdf-cli-2.1.0-macos-universal.zip"
+          cp "$APP/Contents/Resources"/OFL-*.txt target/cli-stage/
+          ditto -c -k --keepParent target/cli-stage "dist/release/dpdf-cli-2.1.1-macos-universal.zip"
 
       - name: Upload macOS Installers
         uses: actions/upload-artifact@v4
@@ -169,7 +232,7 @@ jobs:
             dist/release/dpdf-*.zip
 
   publish-release:
-    name: Publish Release v2.1.0
+    name: Publish Release v2.1.1
     runs-on: ubuntu-latest
     needs: [build-windows, build-macos]
     if: always() && needs.build-windows.result == 'success' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
@@ -193,8 +256,8 @@ jobs:
       - name: Create or Update GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v2.1.0' }}
-          name: "dpdf ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v2.1.0' }}"
+          tag_name: ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v2.1.1' }}
+          name: "dpdf ${{ startsWith(github.ref, 'refs/tags/') && github.ref_name || 'v2.1.1' }}"
           body_path: CHANGELOG.md
           draft: false
           prerelease: false

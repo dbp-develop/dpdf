@@ -2438,3 +2438,5 @@ animation effects	Off	Aus
 	Dock toolbar	Werkzeugleiste andocken
 	Float toolbar	Werkzeugleiste lösen
 	Drop a PDF or click to open	PDF ablegen oder zum Öffnen klicken
+	Save your changes before installing the update. dpdf has to close to replace itself.	Speichere deine Änderungen, bevor das Update installiert wird. dpdf muss sich schließen, um sich selbst zu ersetzen.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	Das Update wurde nicht installiert (Beendigungscode des Installationsprogramms {code}). Das Setup-Protokoll liegt in {log}.

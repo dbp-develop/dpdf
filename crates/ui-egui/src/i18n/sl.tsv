@@ -2442,3 +2442,5 @@ animation effects	Off	Izklopljeni
 	Dock toolbar	Zasidraj orodno vrstico
 	Float toolbar	Sprosti orodno vrstico
 	Drop a PDF or click to open	Spustite PDF ali kliknite za odprtje
+	Save your changes before installing the update. dpdf has to close to replace itself.	Pred namestitvijo posodobitve shranite spremembe. dpdf se mora zapreti, da zamenja samega sebe.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	Posodobitev ni bila nameščena (izhodna koda namestitvenega programa {code}). Dnevnik namestitve je v {log}.

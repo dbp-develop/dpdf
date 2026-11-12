@@ -2401,3 +2401,5 @@ animation effects	Off	关
 	Dock toolbar	停靠工具栏
 	Float toolbar	浮动工具栏
 	Drop a PDF or click to open	拖放 PDF 或点击打开
+	Save your changes before installing the update. dpdf has to close to replace itself.	安装更新前请先保存更改。dpdf 必须关闭才能替换自身。
+	The update did not install (installer exit code {code}). The setup log is in {log}.	更新没有安装（安装程序退出代码 {code}）。安装日志位于 {log}。

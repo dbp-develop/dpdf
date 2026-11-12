@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [2.1.1] - 2026-11-12 — Offline tools and silent per-user update
+
+### Fixed
+- **Recognize Text ships with the app.** The Windows setup, the MSI, the portable zip, and the macOS app include `text-detection.rten` and `text-recognition.rten`. A per-user install and an all-users install both put them in `models` beside `dpdf.exe`. Recognize Text no longer reports that the models are missing.
+- **Japanese, Arabic, Hebrew, Thai, and Telugu text is in the program.** The release build compiles those faces in, so they work without a download and without a font already on the computer. Simplified Chinese still uses a Chinese font installed on the machine.
+- **A silent update for the current user can finish.** The Windows setup accepts `/CURRENTUSER` and `/ALLUSERS` from the in-app updater. dpdf closes, waits until setup exits, then starts again. A failed install is reported on the next launch.
+
+---
+
 ## [2.1.0] - 2026-11-12 — Insert pages by dropping a PDF
 
 ### Added

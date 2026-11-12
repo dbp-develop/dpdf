@@ -67,15 +67,24 @@ date in the AppStream metadata. The binaries don't embed the commit yet.
 **Fonts:** every job checks out [craft-fonts](https://github.com/storytold/craft-fonts) at the commit
 pinned in `release.yml` and builds with `CRAFT_FONTS_DIR` and `CRAFT_FONTS_REQUIRED=1`, so releases
 embed its Japanese fonts and fail rather than ship without them (`AGENTS.md` §1.4). Bump the pin
-deliberately.
+deliberately. `.github/workflows/build-and-release.yml` does the same for the Windows and macOS
+packages, at commit `c1db6d1a8ed772191241c3d185e2104be84d8691`. Those faces (Japanese, Arabic,
+Hebrew, Thai, Telugu, and the other faces in that checkout, except Noto CJK) are inside `dpdf.exe`.
+The installer also carries each family's `OFL.txt`. A build that skips the checkout still runs, and
+then those languages draw replacement boxes or refuse the text; `CRAFT_FONTS_REQUIRED` stops that.
 
 **OCR models:** every desktop package ships the Scan & OCR models (#103). The packaging scripts call
 `stage_models` (`packaging/env.sh`; `package.ps1` on Windows), which runs `cargo xtask models` to
 fetch every `kind = "model"` file in `ATTRIBUTION.toml` (verified by SHA-256) with its licence text
 and an `ATTRIBUTION.txt`, straight into the package, so packaging needs the network. They go where
-`pdfcraft_ocr::Models::dirs_beside_exe` looks: `models\` beside `pdfcraft.exe` (MSI, portable zip),
-`PdfCraft.app/Contents/Resources/models` (macOS), and `share/pdfcraft/models` beside `bin/`
-(deb, rpm, tar.gz, AppImage, Flatpak, FreeBSD). The web build doesn't include them yet.
+`pdfcraft_ocr::Models::dirs_beside_exe` looks: `models\` beside the executable (MSI, setup and
+portable zip, for a per-user install and for an all-users install), `Contents/Resources/models`
+(macOS), and `share/pdfcraft/models` beside `bin/` (deb, rpm, tar.gz, AppImage, Flatpak, FreeBSD).
+`.github/workflows/build-and-release.yml` fetches the same two files (`text-detection.rten` and
+`text-recognition.rten`) for the Windows and macOS artifacts and fails the job if either is missing
+or empty. The original host answers 403, so each model entry also lists a mirror; the download is
+still refused unless the SHA-256 matches. A models folder that only contains a note is not a package.
+The web build doesn't include them yet.
 
 ### macOS
 

@@ -104,8 +104,15 @@ New-Item -ItemType Directory -Force -Path $Models | Out-Null
 Push-Location $Root
 try { Invoke-Native 'cargo xtask models' { cargo xtask models $Models } } finally { Pop-Location }
 Remove-Item -Force (Join-Path $Models '*.part') -ErrorAction SilentlyContinue
-if (-not (Test-Path (Join-Path $Models 'ATTRIBUTION.txt')) -or -not (Get-ChildItem (Join-Path $Models '*.LICENCE.txt'))) {
-  throw "no OCR models in $Models after cargo xtask models"
+# A licence note is not a model. Recognize Text opens these two files beside the executable.
+foreach ($name in @('text-detection.rten', 'text-recognition.rten', 'ATTRIBUTION.txt')) {
+  $path = Join-Path $Models $name
+  if (-not (Test-Path $path) -or (Get-Item $path).Length -le 0) {
+    throw "OCR model missing or empty: $path"
+  }
+}
+if (-not (Get-ChildItem (Join-Path $Models '*.LICENCE.txt'))) {
+  throw "no OCR model licences in $Models after cargo xtask models"
 }
 
 # ---- MSI ---------------------------------------------------------------------------------------

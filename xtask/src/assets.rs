@@ -134,6 +134,10 @@ pub struct Fetched {
     pub kind: String,
     pub usage: String,
     pub sha256: String,
+    /// Extra URLs for the same bytes, tried in order when `url` refuses the download.
+    /// Every one is still checked against `sha256`.
+    #[serde(default)]
+    pub mirrors: Vec<String>,
 }
 
 pub fn root() -> PathBuf {
@@ -294,6 +298,11 @@ pub fn check(root: &Path, m: &Manifest, repo_files: &[String], lock: &BTreeSet<(
         if !f.url.starts_with("https://") || !f.licence_url.starts_with("https://") {
             problems.push(format!("{}: URLs must be https", f.file));
         }
+        for mirror in &f.mirrors {
+            if !mirror.starts_with("https://") {
+                problems.push(format!("{}: mirror URLs must be https", f.file));
+            }
+        }
     }
     for b in &m.build_input {
         licence_ok(&b.name, &b.licence, &mut problems);
@@ -314,30 +323,48 @@ pub fn fetch_all(m: &Manifest, dir: &Path, kind: &str) -> Result<Vec<PathBuf>> {
     let mut out = Vec::new();
     for f in m.fetched.iter().filter(|f| f.kind == kind) {
         let path = dir.join(&f.file);
-        fetch_verified(&f.url, &path, &f.sha256)?;
+        let mut urls = Vec::with_capacity(1 + f.mirrors.len());
+        urls.push(f.url.as_str());
+        urls.extend(f.mirrors.iter().map(String::as_str));
+        fetch_verified(&urls, &path, &f.sha256)?;
         let licence = dir.join(format!("{}.LICENCE.txt", f.file));
-        fetch_verified(&f.licence_url, &licence, &f.licence_sha256)?;
+        fetch_verified(&[f.licence_url.as_str()], &licence, &f.licence_sha256)?;
         out.push(path);
     }
     Ok(out)
 }
 
-fn fetch_verified(url: &str, path: &Path, sha256: &str) -> Result<()> {
+fn fetch_verified(urls: &[&str], path: &Path, sha256: &str) -> Result<()> {
     if std::fs::read(path).is_ok_and(|b| sha256_hex(&b) == sha256) {
         return Ok(());
     }
+    if urls.is_empty() {
+        bail!("no download URL for {}", path.display());
+    }
+    let mut errors = Vec::new();
+    for url in urls {
+        match fetch_once(url, path, sha256) {
+            Ok(()) => return Ok(()),
+            Err(err) => errors.push(format!("{url}: {err:#}")),
+        }
+    }
+    bail!("{}", errors.join("\n"));
+}
+
+fn fetch_once(url: &str, path: &Path, sha256: &str) -> Result<()> {
     println!("assets: fetching {url}");
     let tmp = path.with_extension("part");
     let status = Command::new("curl").args(["-sSfL", "--retry", "3", "-o"]).arg(&tmp).arg(url).status().context("running curl")?;
     if !status.success() {
-        bail!("download failed: {url}");
+        let _ = std::fs::remove_file(&tmp);
+        bail!("download failed");
     }
-    let bytes = std::fs::read(&tmp)?;
+    let bytes = std::fs::read(&tmp).with_context(|| format!("reading {}", tmp.display()))?;
     if sha256_hex(&bytes) != sha256 {
         let _ = std::fs::remove_file(&tmp);
-        bail!("{url}: SHA-256 mismatch (expected {sha256}); refusing to use it");
+        bail!("SHA-256 mismatch (expected {sha256}); refusing to use it");
     }
-    std::fs::rename(&tmp, path)?;
+    std::fs::rename(&tmp, path).with_context(|| format!("replacing {}", path.display()))?;
     Ok(())
 }
 

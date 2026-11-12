@@ -2437,3 +2437,5 @@ animation effects	Off	オフ
 	Dock toolbar	ツールバーを固定
 	Float toolbar	ツールバーをフローティングにする
 	Drop a PDF or click to open	PDFをドロップするか、クリックして開く
+	Save your changes before installing the update. dpdf has to close to replace itself.	更新をインストールする前に変更を保存してください。dpdf は自分自身を置き換えるために終了する必要があります。
+	The update did not install (installer exit code {code}). The setup log is in {log}.	更新はインストールされませんでした（インストーラーの終了コード {code}）。セットアップの記録は {log} にあります。
