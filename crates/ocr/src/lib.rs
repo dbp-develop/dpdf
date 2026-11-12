@@ -403,6 +403,25 @@ mod tests {
         }
     }
 
+    /// Japanese, Arabic, Hebrew, Thai and Telugu text is compiled into the program from
+    /// craft-fonts. A release that forgets `CRAFT_FONTS_DIR` still installs, and those tools
+    /// then draw replacement boxes or refuse the text, with no file the user can add later.
+    #[test]
+    fn release_builds_embed_craft_fonts() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+        let workflow = std::fs::read_to_string(root.join(".github/workflows/build-and-release.yml")).unwrap();
+        let pin = "c1db6d1a8ed772191241c3d185e2104be84d8691";
+        assert_eq!(workflow.matches("storytold/craft-fonts").count(), 2, "Windows and macOS both check out the fonts");
+        assert_eq!(workflow.matches(pin).count(), 2, "both jobs pin the same commit");
+        assert!(workflow.matches("CRAFT_FONTS_DIR:").count() >= 2, "the compile must see the checkout");
+        assert!(workflow.matches("CRAFT_FONTS_REQUIRED:").count() >= 2, "a missing checkout must fail the build");
+        assert!(workflow.contains("OFL-"), "the font licence notices ship with the program");
+        let iss = std::fs::read_to_string(root.join("packaging/windows/dpdf.iss")).unwrap();
+        assert!(iss.contains("OFL-*.txt"), "the Windows setup must install the font notices");
+        let wxs = std::fs::read_to_string(root.join("packaging/windows/dpdf.wxs")).unwrap();
+        assert!(wxs.contains("OFL-*.txt"), "the MSI must install the font notices");
+    }
+
     /// The message tells end users what to do; release builds have no cargo.
     #[test]
     fn the_alphabet_is_the_trained_one() {

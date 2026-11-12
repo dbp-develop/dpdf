@@ -61,6 +61,7 @@
 
     <Feature Id="Main" Title="dpdf" Level="1">
       <ComponentGroupRef Id="DpdfFiles" />
+      <ComponentGroupRef Id="DpdfFontLicences" />
       <ComponentGroupRef Id="DpdfModels" />
     </Feature>
   </Package>
@@ -158,6 +159,11 @@
       <Component Id="DpdfNotice">
         <File Id="DpdfNoticeFile" Source="$(var.BinDir)\NOTICE" KeyPath="yes" />
       </Component>
+    </ComponentGroup>
+
+    <!-- OFL notices for the faces compiled into dpdf.exe. -->
+    <ComponentGroup Id="DpdfFontLicences" Directory="INSTALLFOLDER">
+      <Files Include="$(var.BinDir)\OFL-*.txt" />
     </ComponentGroup>
 
     <!-- text-detection.rten and text-recognition.rten, beside dpdf.exe. The release build

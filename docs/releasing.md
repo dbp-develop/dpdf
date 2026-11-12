@@ -67,7 +67,11 @@ date in the AppStream metadata. The binaries don't embed the commit yet.
 **Fonts:** every job checks out [craft-fonts](https://github.com/storytold/craft-fonts) at the commit
 pinned in `release.yml` and builds with `CRAFT_FONTS_DIR` and `CRAFT_FONTS_REQUIRED=1`, so releases
 embed its Japanese fonts and fail rather than ship without them (`AGENTS.md` §1.4). Bump the pin
-deliberately.
+deliberately. `.github/workflows/build-and-release.yml` does the same for the Windows and macOS
+packages, at commit `c1db6d1a8ed772191241c3d185e2104be84d8691`. Those faces (Japanese, Arabic,
+Hebrew, Thai, Telugu, and the other faces in that checkout, except Noto CJK) are inside `dpdf.exe`.
+The installer also carries each family's `OFL.txt`. A build that skips the checkout still runs, and
+then those languages draw replacement boxes or refuse the text; `CRAFT_FONTS_REQUIRED` stops that.
 
 **OCR models:** every desktop package ships the Scan & OCR models (#103). The packaging scripts call
 `stage_models` (`packaging/env.sh`; `package.ps1` on Windows), which runs `cargo xtask models` to

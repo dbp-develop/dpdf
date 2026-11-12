@@ -2,6 +2,8 @@
 
 **Stage: alpha** · next: beta, ~25% (ready for real work 50% → 75%) and ~400–700 h away
 
+> **Last reviewed:** 2026-11-12 · **Last updated:** 2026-11-12 · **Change:** minor (the Windows and macOS release build compiles in the craft-fonts faces and still ships the OCR models, so an install works offline; estimates unchanged)
+
 > **Last reviewed:** 2026-11-12 · **Last updated:** 2026-11-12 · **Change:** minor (Windows, macOS and the other release packages ship the OCR model files beside the app; a placeholder models folder is no longer enough; estimates unchanged)
 
 > **Last reviewed:** 2026-11-12 · **Last updated:** 2026-11-12 · **Change:** minor (v2.1.0: dropping a PDF on the bottom of a page, or in the gap after it, inserts every page of that file there; estimates unchanged)
@@ -181,6 +183,8 @@ Ranked; detail and the full milestone table in [docs/roadmap.md](docs/roadmap.md
 | 8 | 1.0 polish: performance, right-to-left, missing languages, keyboard-only (M14) | 55–95 |
 
 ## Progress log
+
+- **2026-11-12:** Offline install. Text recognition is the only tool that opens a file beside the program (`text-detection.rten` and `text-recognition.rten`); every other tool is compiled in. The published Windows and macOS jobs were also built without the craft-fonts checkout, so Japanese, Arabic, Hebrew, Thai and Telugu text had no face inside the program. Those jobs now pin craft-fonts `c1db6d1a8ed772191241c3d185e2104be84d8691`, set `CRAFT_FONTS_REQUIRED`, and ship the OFL notices. Noto CJK is still not embedded. Check for Updates, and a signature timestamp the user points at a server, are the steps that use the network. Estimates unchanged.
 
 - **2026-11-12:** Recognize Text. The published installers shipped a models folder with a note in it and not `text-detection.rten` or `text-recognition.rten`, so OCR said the models were missing for a per-user Windows install and for the other packages from that build. The release build now downloads the models, refuses to package without those two files, and puts them beside the app (Windows setup and MSI, portable zip, macOS bundle, and the Linux and FreeBSD packages). Other tools do not load a separate module; they are in the program itself. Estimates unchanged.
 

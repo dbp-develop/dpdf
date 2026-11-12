@@ -49,6 +49,8 @@ Source: "{#BinDir}\dpdf-cli.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BinDir}\NOTICE"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BinDir}\LICENSE-MIT"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#BinDir}\LICENSE-APACHE"; DestDir: "{app}"; Flags: ignoreversion
+; Notices for the faces compiled into dpdf.exe. The font files are inside the program.
+Source: "{#BinDir}\OFL-*.txt"; DestDir: "{app}"; Flags: ignoreversion
 ; OCR models, beside dpdf.exe for both "for me only" and "for everyone".
 ; The two model files are required. skipifsourcedoesntexist would build an
 ; installer whose Recognize Text says the models are missing.
