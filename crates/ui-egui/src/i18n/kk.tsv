@@ -2435,3 +2435,5 @@ animation effects	Off	Өшірулі
 	Dock toolbar	Құралдар тақтасын бекіту
 	Float toolbar	Құралдар тақтасын босату
 	Drop a PDF or click to open	PDF тастаңыз немесе ашу үшін басыңыз
+	Save your changes before installing the update. dpdf has to close to replace itself.	Жаңартуды орнатпас бұрын өзгерістерді сақтаңыз. dpdf өзінің орнын басу үшін жабылуы керек.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	Жаңарту орнатылмады (орнатқыштың шығу коды {code}). Орнату журналы {log} ішінде.

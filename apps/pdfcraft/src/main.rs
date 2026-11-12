@@ -432,6 +432,17 @@ fn app_creator<'a>(
         } else {
             log::info!("renderer: OpenGL (glow)");
         }
+        // The Windows updater restarts into this process after the installer exits. A failure
+        // code was written down because the installer itself had no window.
+        if let Some(code) = updates::take_update_result() {
+            let log = updates::setup_log_path();
+            if updates::update_succeeded(code) {
+                log::info!("update installer finished (exit {code}); log: {}", log.display());
+            } else {
+                log::error!("update installer failed (exit {code}); log: {}", log.display());
+                app.notify_update_failed(code, &log.display().to_string());
+            }
+        }
         // A portable marker whose data folder can't be written (#157): say where settings went.
         if let Some(w) = &pdfcraft_ui_egui::portable::current().unwritable {
             app.notify_fmt(

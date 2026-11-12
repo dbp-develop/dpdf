@@ -2690,3 +2690,5 @@ key	Space	Space
 	Dock toolbar	Ghim thanh công cụ
 	Float toolbar	Thả nổi thanh công cụ
 	Drop a PDF or click to open	Thả PDF hoặc bấm để mở
+	Save your changes before installing the update. dpdf has to close to replace itself.	Hãy lưu các thay đổi trước khi cài bản cập nhật. dpdf phải đóng để thay thế chính nó.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	Bản cập nhật không được cài đặt (mã thoát của trình cài đặt {code}). Nhật ký cài đặt nằm trong {log}.

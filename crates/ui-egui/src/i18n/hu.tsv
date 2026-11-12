@@ -2436,3 +2436,5 @@ animation effects	Off	Ki
 	Dock toolbar	Eszköztár rögzítése
 	Float toolbar	Eszköztár lebegtetése
 	Drop a PDF or click to open	Húzzon ide egy PDF-et, vagy kattintson a megnyitáshoz
+	Save your changes before installing the update. dpdf has to close to replace itself.	Mentse a módosításokat a frissítés telepítése előtt. A dpdfnek be kell zárnia, hogy lecserélje magát.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	A frissítés nem települt (a telepítő kilépési kódja: {code}). A telepítési napló helye: {log}.

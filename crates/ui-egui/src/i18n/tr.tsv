@@ -2433,3 +2433,5 @@ animation effects	Off	Kapalı
 	Dock toolbar	Araç çubuğunu sabitle
 	Float toolbar	Araç çubuğunu yüzdür
 	Drop a PDF or click to open	PDF bırakın veya açmak için tıklayın
+	Save your changes before installing the update. dpdf has to close to replace itself.	Güncellemeyi yüklemeden önce değişikliklerinizi kaydedin. dpdf'in kendini değiştirmesi için kapanması gerekir.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	Güncelleme yüklenmedi (yükleyicinin çıkış kodu {code}). Kurulum günlüğü {log} içinde.

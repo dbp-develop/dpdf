@@ -2350,3 +2350,5 @@ animation effects	Off	Выкл
 	Dock toolbar	Закрепить панель инструментов
 	Float toolbar	Открепить панель инструментов
 	Drop a PDF or click to open	Перетащите PDF или нажмите, чтобы открыть
+	Save your changes before installing the update. dpdf has to close to replace itself.	Сохраните изменения перед установкой обновления. dpdf должен закрыться, чтобы заменить себя.
+	The update did not install (installer exit code {code}). The setup log is in {log}.	Обновление не установлено (код выхода установщика {code}). Журнал установки находится в {log}.
