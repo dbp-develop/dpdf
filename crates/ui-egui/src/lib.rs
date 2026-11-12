@@ -1,7 +1,7 @@
 //! pdfcraft-ui-egui — the first PdfCraft shell (L7).
 //!
-//! Layout grammar follows plan/acrobat/02-ui-ux.md §1: tab strip, mode bar, left tool panel,
-//! floating quick-action bar, document area, right panel + right rail with page navigation.
+//! Content-first chrome: a thin top bar (home, tabs, command search, theme, menu), a quiet
+//! mode strip, a collapsible tools panel and inspector, and a dockable quick toolbar over the page.
 //! Everything here is presentation: documents, rendering and the tool catalogue live in
 //! `pdfcraft-engine`.
 
@@ -522,6 +522,8 @@ pub struct PdfCraftApp {
     /// showing its comments or bookmarks (#1590). Remembered across restarts.
     pub right_panel_closed: bool,
     pub quick_tool: QuickTool,
+    /// The quick toolbar stays in the workspace bar. Remembered across restarts.
+    pub quick_bar_docked: bool,
     /// The tool to go back to when Space, held for a temporary Hand, is released.
     space_hand: Option<QuickTool>,
     /// Comment author, per-tool colours and widths, pin.
@@ -910,12 +912,13 @@ impl PdfCraftApp {
             left: LeftPanel::AllTools,
             docking: docking::Workspace::default(),
             pending_panel_reveals: Vec::new(),
-            left_open: true,
+            left_open: false,
             right: None,
             right_before_read: None,
             comments_panel_closed: false,
             right_panel_closed: false,
             quick_tool: QuickTool::Select,
+            quick_bar_docked: true,
             space_hand: None,
             comment_prefs: Default::default(),
             theme: ThemeKind::Light,
@@ -1501,8 +1504,8 @@ impl PdfCraftApp {
         }
     }
 
-    /// When a document is open, files dropped at the bottom of the page (or bottom of the viewport)
-    /// append their pages to the end of the open document. Returns files not consumed.
+    /// When a document is open, files dropped on the bottom of a page, or in the gap after it,
+    /// insert all of their pages there. The pages that followed shift down. Returns files not consumed.
     #[cfg(not(target_arch = "wasm32"))]
     fn drop_on_page_bottom(&mut self, dropped: Vec<egui::DroppedFileHandle>, ctx: &egui::Context) -> Vec<egui::DroppedFileHandle> {
         if dropped.is_empty() {
@@ -1530,44 +1533,33 @@ impl PdfCraftApp {
         };
 
         let vp = view.viewport_screen();
-        if !vp.is_positive() {
+        if !vp.is_positive() || !vp.contains(p) {
             return dropped;
         }
-        let in_x = p.x >= vp.min.x - 40.0 && p.x <= vp.max.x + 40.0;
-        if !in_x {
+        let Some(at) = crate::canvas::insert_after_page(view.screen_rects(), p) else {
+            return dropped;
+        };
+        let count = doc.info.pages.len();
+        let mut files = Vec::new();
+        for f in &dropped {
+            let name = f.path().file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "dropped.pdf".into());
+            if f.path().is_absolute() {
+                files.push((name, Err(f.path().to_path_buf())));
+                continue;
+            }
+            match f.bytes() {
+                Ok(b) => files.push((name, Ok(b))),
+                Err(e) => self.notify_fmt("Couldn't read {name}: {e}", &[("name", &name), ("e", &e)]),
+            }
+        }
+        if files.is_empty() {
             return dropped;
         }
-
-        let on_page_bottom = view.screen_rects().iter().any(|(_, r)| {
-            let bottom_start = r.min.y + r.height() * 0.70;
-            p.y >= bottom_start && p.y <= r.max.y + 60.0 && (r.min.x - 40.0..=r.max.x + 40.0).contains(&p.x)
-        });
-        let below_last_page = view.screen_rects().last().is_some_and(|(_, r)| p.y >= r.max.y - 30.0 && p.y <= vp.max.y + 30.0);
-        let in_viewport_bottom = p.y >= vp.min.y + vp.height() * 0.75 && p.y <= vp.max.y + 30.0;
-
-        if on_page_bottom || below_last_page || in_viewport_bottom {
-            let mut files = Vec::new();
-            for f in &dropped {
-                let name = f.path().file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_else(|| "dropped.pdf".into());
-                if f.path().is_absolute() {
-                    files.push((name, Err(f.path().to_path_buf())));
-                    continue;
-                }
-                match f.bytes() {
-                    Ok(b) => files.push((name, Ok(b))),
-                    Err(e) => self.notify_fmt("Couldn't read {name}: {e}", &[("name", &name), ("e", &e)]),
-                }
-            }
-            if !files.is_empty() {
-                let count = self.session.get(id).map_or(0, |d| d.info.pages.len());
-                let view = &mut self.views[active_idx];
-                view.insert_at = Some(count);
-                self.insert_each(files.into_iter().map(read_grid_file));
-                ctx.request_repaint();
-                return Vec::new();
-            }
-        }
-        dropped
+        let view = &mut self.views[active_idx];
+        view.insert_at = Some(at.min(count));
+        self.insert_each(files.into_iter().map(read_grid_file));
+        ctx.request_repaint();
+        Vec::new()
     }
 
     /// Browsers read dropped files asynchronously; the bytes land in `inbox` and open next frame.
@@ -2385,6 +2377,7 @@ impl PdfCraftApp {
         });
         // Set apart: one more key inside the macro above passes serde_json's recursion limit.
         v["redact_prefs"] = self.redact_defaults.to_json();
+        v["quick_bar_docked"] = serde_json::Value::Bool(self.quick_bar_docked);
         // Set outside json! above, which is at serde_json's macro recursion limit.
         v["hide_empty_highlight_hover"] = serde_json::Value::Bool(self.comment_prefs.hide_empty_highlight_hover);
         v.to_string()
@@ -2452,6 +2445,9 @@ impl PdfCraftApp {
         }
         if let Some(closed) = v["right_panel_closed"].as_bool() {
             self.right_panel_closed = closed;
+        }
+        if let Some(docked) = v["quick_bar_docked"].as_bool() {
+            self.quick_bar_docked = docked;
         }
         if let Some(defaults) = v["default_zoom"].as_str().and_then(|zoom| self.view_defaults.with_zoom(zoom)) {
             self.view_defaults = defaults;
@@ -3244,11 +3240,12 @@ impl eframe::App for PdfCraftApp {
             window_controls::resize_edges(&ctx);
         }
         chrome::tab_strip(self, ui);
-        chrome::mode_bar(self, ui);
+        // The sidebar is the product navigation. The tools column stays closed until asked for.
+        let start = self.active.is_none() && !self.combine_showing() && self.mode != Mode::Read;
+        chrome::studio(self, ui);
         if self.active.is_some() {
             chrome::status_bar(self, ui);
-            chrome::right_rail(self, ui);
-            // Read mode hides the tools, not the navigation panes: the rail stays visible
+            // Read mode hides the tools, not the navigation panes: the sidebar stays visible
             // there, so its buttons (Bookmarks, Page thumbnails, ...) must open their panels.
             // Outside Read mode the docking workspace draws the inspector.
             if self.mode == Mode::Read && self.right.is_some() {
@@ -3259,10 +3256,19 @@ impl eframe::App for PdfCraftApp {
                     .frame(egui::Frame::NONE)
                     .show(ui, |ui| panels::right_panel(self, ui));
             }
+        } else if start && self.left_open {
+            egui::Panel::left("home_tools")
+                .resizable(true)
+                .default_size(280.0)
+                .size_range(240.0..=520.0)
+                .frame(egui::Frame::NONE)
+                .show(ui, |ui| panels::left_panel(self, ui));
         }
         let t = theme::Tokens::get(&ctx);
         egui::CentralPanel::default().frame(egui::Frame::NONE.fill(t.pasteboard)).show(ui, |ui| {
-            if self.mode == Mode::Read {
+            if start {
+                home::show(self, ui);
+            } else if self.mode == Mode::Read {
                 match self.active {
                     None if self.combine_showing() => combine_ui::page(self, ui),
                     None => home::show(self, ui),

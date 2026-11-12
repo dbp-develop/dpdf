@@ -62,17 +62,16 @@ struct ToolCategory {
     ids: &'static [&'static str],
 }
 
+/// Section titles are existing catalog keys, so every language already translates them.
+/// Ids are the engine catalog's (`scan`, `compress`, `certificate`, …).
 const TOOL_CATEGORIES: &[ToolCategory] = &[
-    ToolCategory { name: "Edit", ids: &["edit", "create", "combine"] },
-    ToolCategory { name: "Organize", ids: &["organize"] },
-    ToolCategory { name: "Comment", ids: &["comment", "measure"] },
-    ToolCategory { name: "Forms & Sign", ids: &["form", "fill_sign", "certificates"] },
+    ToolCategory { name: "Edit", ids: &["edit", "create", "combine", "stamp"] },
+    ToolCategory { name: "Organize pages", ids: &["organize"] },
+    ToolCategory { name: "Comments", ids: &["comment", "measure"] },
+    ToolCategory { name: "Forms", ids: &["form", "fill_sign", "certificate"] },
     ToolCategory { name: "Security", ids: &["protect", "redact"] },
-    ToolCategory { name: "Convert", ids: &["export", "scan_ocr"] },
-    ToolCategory {
-        name: "Optimize",
-        ids: &["optimize", "compare", "accessibility", "standards", "print_production", "rich_media", "custom_actions", "index"],
-    },
+    ToolCategory { name: "Convert", ids: &["export", "scan"] },
+    ToolCategory { name: "Optimize", ids: &["compress", "compare", "accessibility", "standards", "print_production", "actions", "search_index"] },
 ];
 
 fn all_tools(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &Tokens) {
@@ -80,35 +79,46 @@ fn all_tools(app: &mut PdfCraftApp, ui: &mut egui::Ui, t: &Tokens) {
     if close {
         app.left_open = false;
     }
-    egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
+    // Pinned under the list. Inside the scroll area, category headers push it below a
+    // 900 px window and the click never lands.
+    let more_h = 32.0;
+    let scroll_h = (ui.available_height() - more_h).max(0.0);
+    egui::ScrollArea::vertical().auto_shrink([false, false]).max_height(scroll_h).show(ui, |ui| {
         let shown_limit = if app.all_tools_expanded { TOOL_GROUPS.len() } else { COLLAPSED_TOOLS.min(TOOL_GROUPS.len()) };
         let available_groups = &TOOL_GROUPS[..shown_limit];
+        let mut placed = Vec::new();
         for cat in TOOL_CATEGORIES {
             let cat_groups: Vec<_> = available_groups.iter().filter(|g| cat.ids.contains(&g.id)).collect();
             if !cat_groups.is_empty() {
                 ui.add_space(4.0);
                 widgets::section_title(ui, tl!(cat.name));
                 for g in cat_groups {
+                    placed.push(g.id);
                     if tool_row(ui, t, g).clicked() {
                         app.select_tool(g.id);
                     }
                 }
             }
         }
-        ui.add_space(8.0);
-        let more = if app.all_tools_expanded { "View less" } else { "View more" };
-        if ui
-            .add(
-                egui::Label::new(egui::RichText::new(tl!(more)).color(t.accent_text).font(theme::medium(13.0)))
-                    .selectable(false)
-                    .sense(Sense::click()),
-            )
-            .on_hover_cursor(egui::CursorIcon::PointingHand)
-            .clicked()
-        {
-            app.all_tools_expanded = !app.all_tools_expanded;
+        // A catalog group with no category still has to be reachable.
+        let rest: Vec<_> = available_groups.iter().filter(|g| !placed.contains(&g.id)).collect();
+        if !rest.is_empty() {
+            ui.add_space(4.0);
+            for g in rest {
+                if tool_row(ui, t, g).clicked() {
+                    app.select_tool(g.id);
+                }
+            }
         }
     });
+    let more = if app.all_tools_expanded { "View less" } else { "View more" };
+    if ui
+        .add(egui::Label::new(egui::RichText::new(tl!(more)).color(t.accent_text).font(theme::medium(13.0))).selectable(false).sense(Sense::click()))
+        .on_hover_cursor(egui::CursorIcon::PointingHand)
+        .clicked()
+    {
+        app.all_tools_expanded = !app.all_tools_expanded;
+    }
 }
 
 /// Draw a one-line row label without painting into the status chip or beyond the sidebar.
@@ -123,12 +133,12 @@ fn row_label(ui: &mut egui::Ui, text: &str, font: egui::FontId, color: Color32, 
 }
 
 fn tool_row(ui: &mut egui::Ui, t: &Tokens, g: &ToolGroup) -> egui::Response {
-    let (rect, resp) = ui.allocate_exact_size(vec2(ui.available_width(), 34.0), Sense::click());
+    let (rect, resp) = ui.allocate_exact_size(vec2(ui.available_width(), 40.0), Sense::click());
     resp.widget_info(|| egui::WidgetInfo::labeled(egui::WidgetType::Button, true, tl!(g.label)));
     let press = theme::Press::track(ui, &resp);
     press.wash(ui, rect, 6, false);
     let body = rect.translate(press.offset());
-    icons::paint(ui, Rect::from_min_size(body.min + vec2(6.0, 7.0), vec2(20.0, 20.0)), g.icon, 19.0, hue(g));
+    icons::paint(ui, Rect::from_min_size(body.min + vec2(6.0, 10.0), vec2(20.0, 20.0)), g.icon, 19.0, hue(g));
     let right_reserved = match (g.badge, g.availability) {
         (Some(b), _) => ui.fonts_mut(|f| f.layout_no_wrap(tl!(b).to_owned(), theme::semibold(9.5), Color32::WHITE).size().x) + 26.0,
         (None, Availability::Planned(m)) if resp.hovered() => {

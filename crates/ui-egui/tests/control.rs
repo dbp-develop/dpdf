@@ -1293,6 +1293,8 @@ fn measurement_tools_draw_live_calibrate_save_and_export() {
 fn docking_pointer_group_float_close_restore_and_document_commands() {
     use pdfcraft_ui_egui::docking::Panel;
     let (mut h, c) = harness();
+    // The tools column stays closed until it is opened. This test docks onto it.
+    ok(&mut h, &c, "ui.set", json!({"key":"left", "value":"open"}));
     ok(&mut h, &c, "ui.set", json!({"key":"panel", "value":"bookmarks"}));
     h.run_steps(4);
     let from = h.get_by_role_and_label(egui::accesskit::Role::Tab, "Inspector").rect().center();
@@ -1360,6 +1362,7 @@ fn docking_renders_real_pdf_default_floating_and_redocked() {
         for scale in [1.0, 2.0] {
             let (mut h, c) = harness_pages_at(5, width, scale);
             ok(&mut h, &c, "ui.resize", json!({"width":width,"height":900}));
+            ok(&mut h, &c, "ui.set", json!({"key":"left", "value":"open"}));
             ok(&mut h, &c, "ui.set", json!({"key":"panel","value":"bookmarks"}));
             h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index: 0, title: "Overview".into(), page: 0 });
             h.state_mut().apply_edit(pdfcraft_engine::Edit::AddBookmark { parent: vec![], index: 1, title: "Details".into(), page: 2 });
@@ -1383,6 +1386,7 @@ fn docking_renders_real_pdf_default_floating_and_redocked() {
 #[test]
 fn explicit_panel_requests_reveal_inactive_group_members() {
     let (mut h, c) = harness();
+    ok(&mut h, &c, "ui.set", json!({"key":"left", "value":"open"}));
     ok(&mut h, &c, "ui.set", json!({"key":"panel", "value":"bookmarks"}));
     ok(&mut h, &c, "ui.dock", json!({"operation":"move", "panel":"inspector", "target":"tools", "zone":"center"}));
     ok(&mut h, &c, "ui.dock", json!({"operation":"activate", "panel":"tools"}));
@@ -1451,6 +1455,7 @@ fn malformed_docking_settings_preserve_other_preferences() {
 fn rail_reveals_its_remembered_inactive_inspector_then_closes_the_visible_panel() {
     use pdfcraft_ui_egui::docking::Panel;
     let (mut h, c) = harness();
+    ok(&mut h, &c, "ui.set", json!({"key":"left", "value":"open"}));
     ok(&mut h, &c, "ui.set", json!({"key":"panel", "value":"bookmarks"}));
     ok(&mut h, &c, "ui.dock", json!({"operation":"move", "panel":"inspector", "target":"tools", "zone":"center"}));
     ok(&mut h, &c, "ui.dock", json!({"operation":"activate", "panel":"tools"}));
@@ -1712,7 +1717,9 @@ fn routine_continuous_scrolling_does_not_add_navigation_history() {
     h.hover_at(egui::pos2(700.0, 450.0));
     h.event(egui::Event::MouseWheel {
         unit: egui::MouseWheelUnit::Point,
-        delta: egui::vec2(0.0, -1200.0),
+        // The tools column is closed, so a fit-width page is tall. This has to
+        // clear the first page without being a navigation command.
+        delta: egui::vec2(0.0, -4000.0),
         modifiers: egui::Modifiers::NONE,
         phase: egui::TouchPhase::Move,
     });

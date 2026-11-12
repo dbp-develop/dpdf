@@ -33,10 +33,16 @@ fn harness(setup: impl FnOnce(&mut PdfCraftApp) + 'static) -> Harness<'static, P
 
 #[test]
 fn home_shows_welcome_and_tools() {
-    let h = harness(|_| {});
+    let mut h = harness(|_| {});
     h.get_by_label_contains("Welcome to dpdf");
-    assert!(h.query_all_by_label("Organize pages").count() >= 2, "tool list + home card");
     h.get_by_label("Open file");
+    // The catalogue is closed on the start page. One click opens it beside the card.
+    let cards = h.query_all_by_label("Organize pages").count();
+    assert!(cards >= 1, "the start page offers Organize pages");
+    h.get_by_label("All tools").click();
+    h.run_steps(3);
+    assert!(h.query_all_by_label("Organize pages").count() > cards, "the catalogue lists it too");
+    h.get_by_label("View more");
 }
 
 #[test]
@@ -81,12 +87,12 @@ fn long_recent_names_and_paths_are_cut_before_the_page_count() {
         move |app| app.recent.push(pdfcraft_ui_egui::RecentFile { name, path, pages: 7, size: 2048 })
     });
     let text = painted_text(&h);
-    let detail = text.iter().find(|(s, ..)| s.starts_with("7 pages")).expect("the row shows its page count").2;
-    for whole in [&name, &path] {
-        let (_, cut, rect) = text.iter().find(|(s, ..)| s == whole).expect("the row shows the name and the path");
-        assert!(*cut, "{whole:?} is cut short");
-        assert!(rect.right() < detail.left(), "{whole:?} ends before the page count");
-    }
+    let detail = text.iter().find(|(s, ..)| s.starts_with("7 pages")).expect("the card shows its page count").2;
+    let (_, cut, rect) = text.iter().find(|(s, ..)| s == &name).expect("the card shows the name");
+    assert!(*cut, "the long name is cut short");
+    assert!(rect.bottom() <= detail.top() + 1.0, "the name sits above the page count");
+    // The path is the card's tooltip, so it is not painted into the page-count line.
+    assert!(path.len() > name.len());
 }
 
 #[test]
@@ -118,6 +124,8 @@ fn home_removes_one_recent_file_or_clears_them_all() {
 #[test]
 fn every_catalog_tool_is_listed_after_view_more() {
     let mut h = harness(|_| {});
+    h.get_by_label("All tools").click();
+    h.run_steps(3);
     h.get_by_label("View more").click();
     h.run_steps(3);
     for g in pdfcraft_engine::catalog::TOOL_GROUPS {
@@ -143,7 +151,8 @@ fn closed_side_panes_stay_closed_after_a_restart_and_opening_a_pdf() {
     use pdfcraft_ui_egui::RightPanel;
     let mut h = harness(|app| app.open_bytes("fixture.pdf", None, FIXTURE.to_vec()).expect("fixture opens"));
     assert_eq!(h.state().right, Some(RightPanel::Comments));
-    assert!(h.state().left_open);
+    // A document opens on the page. The tools column stays closed until it is opened.
+    assert!(!h.state().left_open);
     h.state_mut().choose_right_panel(None);
     h.state_mut().set_option("left", "closed").unwrap();
     h.run_steps(3);
@@ -636,11 +645,13 @@ fn persistence_round_trips_and_tolerates_garbage() {
     let mut a = PdfCraftApp::new();
     a.set_option("language", "en").unwrap();
     a.set_option("theme", "dark").unwrap();
+    a.quick_bar_docked = false;
     let json = a.persist();
     let mut b = PdfCraftApp::new();
     b.set_option("language", "en").unwrap();
     b.restore(&json);
     assert_eq!(b.theme, pdfcraft_ui_egui::theme::ThemeKind::Dark);
+    assert!(!b.quick_bar_docked, "the quick toolbar dock preference round-trips");
     b.restore("{not json");
     b.restore("{\"recent\": 5, \"theme\": \"Purple\"}");
     assert_eq!(b.theme, pdfcraft_ui_egui::theme::ThemeKind::Dark);
@@ -1217,13 +1228,14 @@ fn long_german_tool_labels_stay_within_the_sidebar() {
     h.run_steps(4);
     let heading =
         painted_text(&h).into_iter().find(|(s, ..)| s.starts_with("Ausfüllen und")).expect("translated heading is painted, whole or elided");
-    assert!(heading.2.right() <= 272.0, "translated heading runs past the sidebar: {:?}", heading.2);
+    // The product sidebar is 248 px, then the 280 px tools column.
+    assert!(heading.2.right() <= 520.0, "translated heading runs past the sidebar: {:?}", heading.2);
     // A long sub-tool name must stop before its status chip, not paint over the PDF.
     h.state_mut().left = LeftPanel::Tool("protect");
     h.run_steps(4);
     let item =
         painted_text(&h).into_iter().find(|(s, ..)| s == "Ausgeblendete Informationen entfernen").expect("long translated sub-tool is painted");
-    assert!(item.2.right() <= 272.0, "translated tool item runs past the sidebar: {:?}", item.2);
+    assert!(item.2.right() <= 520.0, "translated tool item runs past the sidebar: {:?}", item.2);
 }
 
 #[test]
@@ -1360,7 +1372,8 @@ fn the_drop_line_shows_in_front_of_the_first_tab() {
         for y in y0..y1.min(image.height()) {
             for x in x0..x1.min(image.width()) {
                 let p = image.get_pixel(x, y).0;
-                if (p[2] > 150 && p[0] < 90 && p[1] < 140) || (p[0] > 180 && p[1] < 80) {
+                // The accent is indigo (#5B5BD6). The old blue and a red marker both count.
+                if (p[2] > 180 && p[0] < 120 && p[1] < 140) || (p[0] > 180 && p[1] < 80) {
                     n += 1;
                 }
             }

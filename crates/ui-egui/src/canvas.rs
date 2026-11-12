@@ -3756,34 +3756,36 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     view.viewport_screen = out.inner_rect;
     if unobstructed && doc.allows_assembly() && ui.input(|i| !i.raw.hovered_files.is_empty()) {
         let pointer = ui.input(|i| i.pointer.hover_pos().or_else(|| i.pointer.latest_pos()));
-        if let Some(p) = pointer {
+        if let Some(p) = pointer
+            && view.viewport_screen.contains(p)
+            && let Some(at) = insert_after_page(&view.screen_rects, p)
+        {
             let vp = view.viewport_screen;
-            let on_page_bottom = view.screen_rects.iter().any(|(_, r)| {
-                let bottom_start = r.min.y + r.height() * 0.70;
-                p.y >= bottom_start && p.y <= r.max.y + 60.0 && (r.min.x - 40.0..=r.max.x + 40.0).contains(&p.x)
-            });
-            let below_last_page = view.screen_rects.last().is_some_and(|(_, r)| p.y >= r.max.y - 30.0 && p.y <= vp.max.y + 30.0);
-            let in_viewport_bottom = p.y >= vp.min.y + vp.height() * 0.75 && p.y <= vp.max.y + 30.0;
-            if (on_page_bottom || below_last_page || in_viewport_bottom) && vp.contains(p) {
-                let painter = ui.painter().with_clip_rect(vp);
-                let y = if let Some((_, r)) = view.screen_rects.iter().find(|(_, r)| {
-                    let bottom_start = r.min.y + r.height() * 0.70;
-                    p.y >= bottom_start && p.y <= r.max.y + 60.0
-                }) {
-                    (r.max.y + 4.0).min(vp.max.y - 12.0)
-                } else if let Some((_, r)) = view.screen_rects.last() {
-                    (r.max.y + 4.0).min(vp.max.y - 12.0)
+            let painter = ui.painter().with_clip_rect(vp);
+            let after = at.saturating_sub(1);
+            let y = view
+                .screen_rects
+                .iter()
+                .find(|(i, _)| *i == after)
+                .map(|(_, r)| (r.max.y + 2.0).clamp(vp.min.y + 12.0, vp.max.y - 12.0))
+                .unwrap_or(p.y);
+            let x_min = (vp.min.x + 20.0).max(view.screen_rects.iter().map(|(_, r)| r.min.x).reduce(f32::min).unwrap_or(vp.min.x + 20.0));
+            let x_max = (vp.max.x - 20.0).min(view.screen_rects.iter().map(|(_, r)| r.max.x).reduce(f32::max).unwrap_or(vp.max.x - 20.0));
+            if x_max > x_min {
+                painter.line_segment([pos2(x_min, y), pos2(x_max, y)], Stroke::new(3.0, t.accent));
+                let badge = if at >= info.pages.len() {
+                    tl!("Insert a file at the end").to_string()
                 } else {
-                    vp.max.y - 16.0
+                    let label = info.pages.get(at).map(|page| page.label.as_str()).filter(|s| !s.is_empty()).unwrap_or("");
+                    let label = if label.is_empty() { (at.saturating_add(1)).to_string() } else { label.to_string() };
+                    crate::i18n::fmt(tl!("Insert a file before page {label}"), &[("label", &label)])
                 };
-                let x_min = (vp.min.x + 20.0).max(view.screen_rects.iter().map(|(_, r)| r.min.x).reduce(f32::min).unwrap_or(vp.min.x + 20.0));
-                let x_max = (vp.max.x - 20.0).min(view.screen_rects.iter().map(|(_, r)| r.max.x).reduce(f32::max).unwrap_or(vp.max.x - 20.0));
-                if x_max > x_min {
-                    painter.line_segment([pos2(x_min, y), pos2(x_max, y)], Stroke::new(3.0, t.accent));
-                    let badge_rect = Rect::from_center_size(pos2((x_min + x_max) / 2.0, y), vec2(160.0, 22.0));
-                    painter.rect_filled(badge_rect, CornerRadius::same(11), t.accent);
-                    painter.text(badge_rect.center(), Align2::CENTER_CENTER, tl!("Add to end of PDF"), theme::semibold(11.0), Color32::WHITE);
-                }
+                let font = theme::semibold(11.0);
+                let text_w = ui.fonts_mut(|f| f.layout_no_wrap(badge.clone(), font.clone(), Color32::WHITE).size().x);
+                let badge_w = (text_w + 16.0).min((x_max - x_min).max(16.0));
+                let badge_rect = Rect::from_center_size(pos2((x_min + x_max) / 2.0, y), vec2(badge_w, 22.0));
+                painter.rect_filled(badge_rect, CornerRadius::same(11), t.accent);
+                painter.text(badge_rect.center(), Align2::CENTER_CENTER, badge, font, Color32::WHITE);
             }
         }
     }
@@ -3937,7 +3939,6 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     }
     find_bar(view, info.pages.len(), avail, ui, &t);
     page_size_hint(view, info, units, avail, unobstructed, ui, &t);
-    floating_hud(view, info.pages.len(), avail, ui, &t);
     if tool == QuickTool::EnhanceCamera {
         crate::camera_ui::bar(ui.ctx(), view, avail, &t, can_modify);
     }
@@ -4120,10 +4121,6 @@ pub fn document_area(app: &mut PdfCraftApp, index: usize, ui: &mut egui::Ui) {
     }
     if copy_selected {
         app.execute("edit.copy");
-    }
-    // Read mode hides the tools (#2646).
-    if app.mode != crate::Mode::Read {
-        quick_bar(app, avail, ui);
     }
     if let Some((source, file, destination)) = remote_open {
         app.open_remote_link(source, file, destination);
@@ -4348,95 +4345,6 @@ fn page_size_hint(view: &DocView, info: &DocInfo, units: crate::units::Unit, are
                 .inner_margin(egui::Margin::symmetric(8, 4))
                 .show(ui, |ui| {
                     ui.add(egui::Label::new(egui::RichText::new(text).color(t.text)).selectable(false));
-                });
-        });
-}
-
-/// Floating frosted-glass HUD toolbar at the bottom center of the document canvas.
-/// Provides convenient quick access to page navigation, zoom percentage, fit toggle, and continuous view.
-fn floating_hud(view: &mut DocView, pages: usize, area: Rect, ui: &mut egui::Ui, t: &Tokens) {
-    if pages == 0 {
-        return;
-    }
-    // Suppress during drag-and-drop file hovering to keep the drop target badge unobscured.
-    if ui.input(|i| !i.raw.hovered_files.is_empty()) {
-        return;
-    }
-
-    egui::Area::new(egui::Id::new("floating-hud"))
-        .order(egui::Order::Middle)
-        .pivot(Align2::CENTER_BOTTOM)
-        .fixed_pos(area.center_bottom() + vec2(0.0, -16.0))
-        .show(ui.ctx(), |ui| {
-            let bg = if t.dark() { Color32::from_rgba_premultiplied(19, 25, 34, 230) } else { Color32::from_rgba_premultiplied(248, 250, 252, 235) };
-            let border =
-                if t.dark() { Color32::from_rgba_premultiplied(48, 54, 61, 200) } else { Color32::from_rgba_premultiplied(203, 213, 225, 200) };
-            egui::Frame::NONE
-                .fill(bg)
-                .stroke(Stroke::new(1.0, border))
-                .corner_radius(CornerRadius::same(18))
-                .shadow(egui::Shadow { offset: [0, 6], blur: 20, spread: 0, color: Color32::from_black_alpha(if t.dark() { 130 } else { 35 }) })
-                .inner_margin(egui::Margin::symmetric(10, 4))
-                .show(ui, |ui| {
-                    ui.horizontal_centered(|ui| {
-                        ui.spacing_mut().item_spacing.x = 4.0;
-
-                        // Prev page
-                        let can_prev = view.current > 0;
-                        if ui.add_enabled_ui(can_prev, |ui| icons::button(ui, "chevron-left", 26.0, false, tl!("Previous page"))).inner.clicked() {
-                            view.step_page(false);
-                        }
-
-                        // Page text indicator
-                        let page_label = format!("{} / {}", view.current + 1, pages);
-                        ui.add(egui::Label::new(egui::RichText::new(page_label).font(theme::medium(12.0)).color(t.text)).selectable(false));
-
-                        // Next page
-                        let can_next = view.current + 1 < pages;
-                        if ui.add_enabled_ui(can_next, |ui| icons::button(ui, "chevron-right", 26.0, false, tl!("Next page"))).inner.clicked() {
-                            view.step_page(true);
-                        }
-
-                        // Divider
-                        ui.add_space(2.0);
-                        ui.painter().vline(ui.cursor().left(), ui.max_rect().y_range().shrink(6.0), Stroke::new(1.0, t.divider));
-                        ui.add_space(4.0);
-
-                        // Zoom out
-                        if icons::button(ui, "zoom-out", 26.0, false, tl!("Zoom out")).clicked() {
-                            view.zoom_step(false);
-                        }
-
-                        // Zoom percent button: clicking resets to 100%
-                        let zoom_str = format!("{:.0}%", view.zoom * 100.0);
-                        let zoom_btn = egui::Button::new(egui::RichText::new(zoom_str).font(theme::medium(11.5)).color(t.text_muted)).frame(false);
-                        if ui.add(zoom_btn).on_hover_text(tl!("Reset zoom to 100%")).clicked() {
-                            view.set_zoom(1.0);
-                        }
-
-                        // Zoom in
-                        if icons::button(ui, "zoom-in", 26.0, false, tl!("Zoom in")).clicked() {
-                            view.zoom_step(true);
-                        }
-
-                        // Divider
-                        ui.add_space(2.0);
-                        ui.painter().vline(ui.cursor().left(), ui.max_rect().y_range().shrink(6.0), Stroke::new(1.0, t.divider));
-                        ui.add_space(4.0);
-
-                        // Fit toggle
-                        let fit_icon = if view.fit == Fit::Width { "maximize" } else { "maximize-2" };
-                        let fit_active = view.fit != Fit::None;
-                        if icons::button(ui, fit_icon, 26.0, fit_active, tl!("Toggle fit page / fit width")).clicked() {
-                            view.set_fit(if view.fit == Fit::Width { Fit::Page } else { Fit::Width });
-                        }
-
-                        // Continuous scroll toggle
-                        let cont_active = view.continuous();
-                        if icons::button(ui, "rows-3", 26.0, cont_active, tl!("Toggle continuous scrolling")).clicked() {
-                            view.set_continuous(!cont_active);
-                        }
-                    });
                 });
         });
 }
@@ -4763,209 +4671,167 @@ fn notice_bar(ui: &mut egui::Ui, t: &Tokens, icon: &str, icon_color: Color32, te
     });
 }
 
-/// The floating quick-action bar at the left edge of the document area.
-fn quick_bar(app: &mut PdfCraftApp, area: Rect, ui: &mut egui::Ui) {
+/// Select, Hand, comments and Fill & Sign. They wrap in the product sidebar,
+/// so a drag on the document never starts on a toolbar button.
+pub(crate) fn quick_tools(app: &mut PdfCraftApp, ui: &mut egui::Ui) {
     let t = Tokens::get(ui.ctx());
-    let pos = area.left_top() + vec2(14.0, 14.0);
-    egui::Area::new(egui::Id::new("quick-bar")).order(egui::Order::Middle).default_pos(pos).movable(true).show(ui.ctx(), |ui| {
-        egui::Frame::NONE
-            .fill(t.card)
-            .stroke(Stroke::new(1.0, t.border))
-            .corner_radius(CornerRadius::same(12))
-            .shadow(egui::Shadow { offset: [0, 4], blur: 16, spread: 0, color: Color32::from_black_alpha(if t.dark() { 100 } else { 28 }) })
-            .inner_margin(egui::Margin::same(6))
-            .show(ui, |ui| {
-                ui.spacing_mut().item_spacing.y = 2.0;
-                ui.vertical(|ui| {
-                    let (handle_rect, _) = ui.allocate_exact_size(vec2(32.0, 6.0), Sense::hover());
-                    ui.painter().rect_filled(Rect::from_center_size(handle_rect.center(), vec2(16.0, 2.0)), CornerRadius::same(1), t.border);
-                    if icons::button(ui, "mouse-pointer-2", 32.0, app.quick_tool == QuickTool::Select, tl!("Select (V)")).clicked() {
-                        app.quick_tool = QuickTool::Select;
-                    }
-                    if icons::button(ui, "hand", 32.0, app.quick_tool == QuickTool::Hand, tl!("Hand (H)")).clicked() {
-                        app.quick_tool = QuickTool::Hand;
-                    }
-                    if let Some(i) = app.active {
-                        let is_org = app.views.get(i).is_some_and(|v| v.organize);
-                        if icons::button(ui, "layout-grid", 32.0, is_org, tl!("Organize pages")).clicked() {
-                            if let Some(v) = app.views.get_mut(i) {
-                                v.organize = !v.organize;
-                            }
-                        }
-                    }
-                    // Comment ▸, Highlight ▸, Draw ▸ (Acrobat's comment toolbar groups). Clicking a
-                    // group selects its last-used tool; clicking it again opens the flyout.
-                    for g in 0..comments::GROUPS.len() {
-                        let current = app.comment_prefs.group_tool[g];
-                        let active = matches!(app.quick_tool, QuickTool::Comment(t) if t.group() == g);
-                        let resp = icons::button(ui, current.icon(), 32.0, active, tl!(current.label()));
-                        // A small corner triangle marks the flyout.
-                        let r = resp.rect;
-                        let tri = [r.right_bottom() + vec2(-4.0, -4.0), r.right_bottom() + vec2(-9.0, -4.0), r.right_bottom() + vec2(-4.0, -9.0)];
-                        ui.painter().add(egui::Shape::convex_polygon(tri.to_vec(), if active { t.accent } else { t.text_faint }, Stroke::NONE));
-                        let open = (resp.clicked() && active) || resp.secondary_clicked();
-                        if resp.clicked() && !active {
-                            app.execute(current.command());
-                        }
-                        egui::Popup::menu(&resp)
-                            .open_memory(open.then_some(egui::SetOpenCommand::Toggle))
-                            .align(egui::RectAlign::RIGHT_START)
-                            .gap(6.0)
-                            .show(|ui| {
-                                for tool in comments::GROUPS[g] {
-                                    let on = app.quick_tool == QuickTool::Comment(*tool);
-                                    let (row, click) = ui.allocate_exact_size(vec2(180.0, 28.0), Sense::click());
-                                    let press = theme::Press::track(ui, &click);
-                                    press.wash(ui, row, 4, on);
-                                    let body = row.translate(press.offset());
-                                    icons::paint(ui, Rect::from_min_size(body.min + vec2(8.0, 6.0), vec2(16.0, 16.0)), tool.icon(), 16.0, t.text);
-                                    let reserve = if on { 28.0 } else { 8.0 };
-                                    crate::widgets::paint_left(
-                                        ui,
-                                        body.left_center() + vec2(34.0, 0.0),
-                                        tl!(tool.label()),
-                                        theme::regular(13.0),
-                                        t.text,
-                                        (row.width() - 34.0 - reserve).max(0.0),
-                                    );
-                                    if on {
-                                        icons::paint(
-                                            ui,
-                                            Rect::from_min_size(body.right_top() + vec2(-24.0, 7.0), vec2(14.0, 14.0)),
-                                            "check",
-                                            14.0,
-                                            t.accent,
-                                        );
-                                    }
-                                    let click = theme::hand(click);
-                                    let info = tl!(tool.label()).to_string();
-                                    click.widget_info(|| egui::WidgetInfo::selected(egui::WidgetType::Button, true, on, info.clone()));
-                                    if click.clicked() {
-                                        app.execute(tool.command());
-                                        ui.close();
-                                    }
-                                }
-                            });
-                    }
-                    // Edit text & images, while the Edit workspace is open (Acrobat's Edit toolbar)
-                    // or the tool is in use.
-                    if app.mode == crate::Mode::Edit || app.quick_tool == QuickTool::EditText {
-                        let on = app.quick_tool == QuickTool::EditText;
-                        if icons::button(ui, "text-cursor-input", 32.0, on, tl!("Edit text & images")).clicked() {
-                            if on {
-                                app.put_down_edit_text();
-                            } else {
-                                app.quick_tool = QuickTool::EditText;
-                            }
-                        }
-                    }
-                    // Fill & Sign ▸ (text, marks, date, signature).
-                    let current_fill = match app.quick_tool {
-                        QuickTool::Fill(f) => Some(f),
-                        _ => None,
-                    };
-                    let shown = current_fill.unwrap_or(crate::fill_sign::FillTool::Text);
-                    let resp = icons::button(
+    let docked = app.quick_bar_docked;
+    ui.horizontal_wrapped(|ui| {
+        ui.spacing_mut().item_spacing = vec2(2.0, 4.0);
+        let dock_tip = if docked { tl!("Float toolbar") } else { tl!("Dock toolbar") };
+        let dock_icon = if docked { "pin" } else { "move" };
+        if icons::button(ui, dock_icon, 32.0, docked, dock_tip).clicked() {
+            app.quick_bar_docked = !app.quick_bar_docked;
+        }
+        if icons::button(ui, "mouse-pointer-2", 32.0, app.quick_tool == QuickTool::Select, tl!("Select (V)")).clicked() {
+            app.quick_tool = QuickTool::Select;
+        }
+        if icons::button(ui, "hand", 32.0, app.quick_tool == QuickTool::Hand, tl!("Hand (H)")).clicked() {
+            app.quick_tool = QuickTool::Hand;
+        }
+        if let Some(i) = app.active {
+            let is_org = app.views.get(i).is_some_and(|v| v.organize);
+            if icons::button(ui, "layout-grid", 32.0, is_org, tl!("Organize pages")).clicked()
+                && let Some(v) = app.views.get_mut(i)
+            {
+                v.organize = !v.organize;
+            }
+        }
+        // Comment ▸, Highlight ▸, Draw ▸ (Acrobat's comment toolbar groups). Clicking a
+        // group selects its last-used tool; clicking it again opens the flyout.
+        for g in 0..comments::GROUPS.len() {
+            let current = app.comment_prefs.group_tool[g];
+            let active = matches!(app.quick_tool, QuickTool::Comment(t) if t.group() == g);
+            let resp = icons::button(ui, current.icon(), 32.0, active, tl!(current.label()));
+            // A small corner triangle marks the flyout.
+            let r = resp.rect;
+            let tri = [r.right_bottom() + vec2(-4.0, -4.0), r.right_bottom() + vec2(-9.0, -4.0), r.right_bottom() + vec2(-4.0, -9.0)];
+            ui.painter().add(egui::Shape::convex_polygon(tri.to_vec(), if active { t.accent } else { t.text_faint }, Stroke::NONE));
+            let open = (resp.clicked() && active) || resp.secondary_clicked();
+            if resp.clicked() && !active {
+                app.execute(current.command());
+            }
+            egui::Popup::menu(&resp).open_memory(open.then_some(egui::SetOpenCommand::Toggle)).gap(6.0).show(|ui| {
+                for tool in comments::GROUPS[g] {
+                    let on = app.quick_tool == QuickTool::Comment(*tool);
+                    let (row, click) = ui.allocate_exact_size(vec2(180.0, 28.0), Sense::click());
+                    let press = theme::Press::track(ui, &click);
+                    press.wash(ui, row, 4, on);
+                    let body = row.translate(press.offset());
+                    icons::paint(ui, Rect::from_min_size(body.min + vec2(8.0, 6.0), vec2(16.0, 16.0)), tool.icon(), 16.0, t.text);
+                    let reserve = if on { 28.0 } else { 8.0 };
+                    crate::widgets::paint_left(
                         ui,
-                        if current_fill.is_some() { shown.icon() } else { "pen-line" },
-                        32.0,
-                        current_fill.is_some(),
-                        tl!("Fill & Sign"),
+                        body.left_center() + vec2(34.0, 0.0),
+                        tl!(tool.label()),
+                        theme::regular(13.0),
+                        t.text,
+                        (row.width() - 34.0 - reserve).max(0.0),
                     );
-                    let r = resp.rect;
-                    let tri = [r.right_bottom() + vec2(-4.0, -4.0), r.right_bottom() + vec2(-9.0, -4.0), r.right_bottom() + vec2(-4.0, -9.0)];
-                    ui.painter().add(egui::Shape::convex_polygon(
-                        tri.to_vec(),
-                        if current_fill.is_some() { t.accent } else { t.text_faint },
-                        Stroke::NONE,
-                    ));
-                    if resp.clicked() && current_fill.is_none() {
-                        app.execute(shown.command());
+                    if on {
+                        icons::paint(ui, Rect::from_min_size(body.right_top() + vec2(-24.0, 7.0), vec2(14.0, 14.0)), "check", 14.0, t.accent);
                     }
-                    let open = (resp.clicked() && current_fill.is_some()) || resp.secondary_clicked();
-                    egui::Popup::menu(&resp)
-                        .open_memory(open.then_some(egui::SetOpenCommand::Toggle))
-                        .align(egui::RectAlign::RIGHT_START)
-                        .gap(6.0)
-                        .show(|ui| {
-                            for tool in crate::fill_sign::FILL_TOOLS {
-                                if matches!(tool, crate::fill_sign::FillTool::Signature | crate::fill_sign::FillTool::Initials) {
-                                    continue;
-                                }
-                                let on = current_fill == Some(tool);
-                                let (row, click) = ui.allocate_exact_size(vec2(180.0, 28.0), Sense::click());
-                                let press = theme::Press::track(ui, &click);
-                                press.wash(ui, row, 4, on);
-                                let body = row.translate(press.offset());
-                                icons::paint(ui, Rect::from_min_size(body.min + vec2(8.0, 6.0), vec2(16.0, 16.0)), tool.icon(), 16.0, t.text);
-                                let reserve = if on { 28.0 } else { 8.0 };
-                                crate::widgets::paint_left(
-                                    ui,
-                                    body.left_center() + vec2(34.0, 0.0),
-                                    tl!(tool.label()),
-                                    theme::regular(13.0),
-                                    t.text,
-                                    (row.width() - 34.0 - reserve).max(0.0),
-                                );
-                                if on {
-                                    icons::paint(
-                                        ui,
-                                        Rect::from_min_size(body.right_top() + vec2(-24.0, 7.0), vec2(14.0, 14.0)),
-                                        "check",
-                                        14.0,
-                                        t.accent,
-                                    );
-                                }
-                                let click = theme::hand(click);
-                                let info = tl!(tool.label()).to_string();
-                                click.widget_info(|| egui::WidgetInfo::selected(egui::WidgetType::Button, true, on, info.clone()));
-                                if click.clicked() {
-                                    app.execute(tool.command());
-                                    ui.close();
-                                }
-                            }
-                            ui.separator();
-                            if let Some(command) = crate::fill_sign::signature_entries(ui, app, &t) {
-                                app.execute(command);
-                                ui.close();
-                            }
-                        });
-                    if matches!(current_fill, Some(crate::fill_sign::FillTool::Text | crate::fill_sign::FillTool::Date)) {
-                        ui.label(tl!("Font size:"));
-                        ui.add(
-                            egui::DragValue::new(&mut app.fill_text_size)
-                                .range(crate::fill_sign::MIN_TEXT_SIZE..=crate::fill_sign::MAX_TEXT_SIZE)
-                                .speed(0.25)
-                                .suffix(" pt"),
-                        );
+                    let click = theme::hand(click);
+                    let info = tl!(tool.label()).to_string();
+                    click.widget_info(|| egui::WidgetInfo::selected(egui::WidgetType::Button, true, on, info.clone()));
+                    if click.clicked() {
+                        app.execute(tool.command());
+                        ui.close();
                     }
-                    if let QuickTool::Comment(tool) = app.quick_tool {
-                        let (r, _) = ui.allocate_exact_size(vec2(32.0, 9.0), Sense::hover());
-                        ui.painter().hline(r.x_range().shrink(6.0), r.center().y, Stroke::new(1.0, t.divider));
-                        if let Some(color) = comments::quick_bar_controls(ui, tool, &mut app.comment_prefs)
-                            && let Some((index, id)) = app.active_ids()
-                            && let Some((page, annotation)) = app.views.get(index).and_then(|view| view.comments.selected)
-                            && app.session.get(id).is_some_and(|doc| {
-                                doc.allows_annotation()
-                                    && doc
-                                        .info
-                                        .annotations
-                                        .iter()
-                                        .any(|a| a.page == page && a.index == annotation && a.in_reply_to.is_none() && comments::made_by(a, tool))
-                            })
-                        {
-                            app.apply_edit(Edit::StyleAnnotation {
-                                page,
-                                index: annotation,
-                                color: Some(color),
-                                opacity: None,
-                                width: None,
-                                endings: None,
-                            });
-                        }
-                    }
-                });
+                }
             });
+        }
+        // Edit text & images, while the Edit workspace is open (Acrobat's Edit toolbar)
+        // or the tool is in use.
+        if app.mode == crate::Mode::Edit || app.quick_tool == QuickTool::EditText {
+            let on = app.quick_tool == QuickTool::EditText;
+            if icons::button(ui, "text-cursor-input", 32.0, on, tl!("Edit text & images")).clicked() {
+                if on {
+                    app.put_down_edit_text();
+                } else {
+                    app.quick_tool = QuickTool::EditText;
+                }
+            }
+        }
+        // Fill & Sign ▸ (text, marks, date, signature).
+        let current_fill = match app.quick_tool {
+            QuickTool::Fill(f) => Some(f),
+            _ => None,
+        };
+        let shown = current_fill.unwrap_or(crate::fill_sign::FillTool::Text);
+        let resp =
+            icons::button(ui, if current_fill.is_some() { shown.icon() } else { "pen-line" }, 32.0, current_fill.is_some(), tl!("Fill & Sign"));
+        let r = resp.rect;
+        let tri = [r.right_bottom() + vec2(-4.0, -4.0), r.right_bottom() + vec2(-9.0, -4.0), r.right_bottom() + vec2(-4.0, -9.0)];
+        ui.painter().add(egui::Shape::convex_polygon(tri.to_vec(), if current_fill.is_some() { t.accent } else { t.text_faint }, Stroke::NONE));
+        if resp.clicked() && current_fill.is_none() {
+            app.execute(shown.command());
+        }
+        let open = (resp.clicked() && current_fill.is_some()) || resp.secondary_clicked();
+        egui::Popup::menu(&resp).open_memory(open.then_some(egui::SetOpenCommand::Toggle)).gap(6.0).show(|ui| {
+            for tool in crate::fill_sign::FILL_TOOLS {
+                if matches!(tool, crate::fill_sign::FillTool::Signature | crate::fill_sign::FillTool::Initials) {
+                    continue;
+                }
+                let on = current_fill == Some(tool);
+                let (row, click) = ui.allocate_exact_size(vec2(180.0, 28.0), Sense::click());
+                let press = theme::Press::track(ui, &click);
+                press.wash(ui, row, 4, on);
+                let body = row.translate(press.offset());
+                icons::paint(ui, Rect::from_min_size(body.min + vec2(8.0, 6.0), vec2(16.0, 16.0)), tool.icon(), 16.0, t.text);
+                let reserve = if on { 28.0 } else { 8.0 };
+                crate::widgets::paint_left(
+                    ui,
+                    body.left_center() + vec2(34.0, 0.0),
+                    tl!(tool.label()),
+                    theme::regular(13.0),
+                    t.text,
+                    (row.width() - 34.0 - reserve).max(0.0),
+                );
+                if on {
+                    icons::paint(ui, Rect::from_min_size(body.right_top() + vec2(-24.0, 7.0), vec2(14.0, 14.0)), "check", 14.0, t.accent);
+                }
+                let click = theme::hand(click);
+                let info = tl!(tool.label()).to_string();
+                click.widget_info(|| egui::WidgetInfo::selected(egui::WidgetType::Button, true, on, info.clone()));
+                if click.clicked() {
+                    app.execute(tool.command());
+                    ui.close();
+                }
+            }
+            ui.separator();
+            if let Some(command) = crate::fill_sign::signature_entries(ui, app, &t) {
+                app.execute(command);
+                ui.close();
+            }
+        });
+        if matches!(current_fill, Some(crate::fill_sign::FillTool::Text | crate::fill_sign::FillTool::Date)) {
+            ui.label(tl!("Font size:"));
+            ui.add(
+                egui::DragValue::new(&mut app.fill_text_size)
+                    .range(crate::fill_sign::MIN_TEXT_SIZE..=crate::fill_sign::MAX_TEXT_SIZE)
+                    .speed(0.25)
+                    .suffix(" pt"),
+            );
+        }
+        if let QuickTool::Comment(tool) = app.quick_tool {
+            let (r, _) = ui.allocate_exact_size(vec2(32.0, 9.0), Sense::hover());
+            ui.painter().hline(r.x_range().shrink(6.0), r.center().y, Stroke::new(1.0, t.divider));
+            if let Some(color) = comments::quick_bar_controls(ui, tool, &mut app.comment_prefs)
+                && let Some((index, id)) = app.active_ids()
+                && let Some((page, annotation)) = app.views.get(index).and_then(|view| view.comments.selected)
+                && app.session.get(id).is_some_and(|doc| {
+                    doc.allows_annotation()
+                        && doc
+                            .info
+                            .annotations
+                            .iter()
+                            .any(|a| a.page == page && a.index == annotation && a.in_reply_to.is_none() && comments::made_by(a, tool))
+                })
+            {
+                app.apply_edit(Edit::StyleAnnotation { page, index: annotation, color: Some(color), opacity: None, width: None, endings: None });
+            }
+        }
     });
 }
 
@@ -5077,6 +4943,52 @@ fn organize_toolbar(view: &mut DocView, info: &DocInfo, editable: bool, dirty: b
             view.selected.clear();
         }
     }
+}
+
+/// Where a file dropped at `p` is inserted while reading: after the page whose bottom
+/// edge, or the gap under it, contains `p`. The result is a page index (`0` would be
+/// before the first page; this only returns positions after a page). `None` when `p`
+/// is on the body of a page, or nowhere near one.
+pub(crate) fn insert_after_page(pages: &[(usize, Rect)], p: Pos2) -> Option<usize> {
+    if pages.is_empty() || !p.is_finite() {
+        return None;
+    }
+    let mut ordered: Vec<(usize, Rect)> = pages.iter().copied().filter(|(_, r)| r.is_positive()).collect();
+    ordered.sort_by(|a, b| a.0.cmp(&b.0).then_with(|| a.1.min.y.total_cmp(&b.1.min.y)).then_with(|| a.1.min.x.total_cmp(&b.1.min.x)));
+    // The gutter between two pages of a spread: after the earlier page.
+    for pair in ordered.windows(2) {
+        let (ai, a) = pair[0];
+        let (bi, b) = pair[1];
+        if bi != ai.saturating_add(1) {
+            continue;
+        }
+        let y0 = a.min.y.max(b.min.y);
+        let y1 = a.max.y.min(b.max.y);
+        if y1 - y0 < 8.0 {
+            continue;
+        }
+        let (left, right) = if a.max.x <= b.min.x + 1.0 {
+            (a, b)
+        } else if b.max.x <= a.min.x + 1.0 {
+            (b, a)
+        } else {
+            continue;
+        };
+        if p.x >= left.max.x && p.x <= right.min.x && p.y >= y0 && p.y <= y1 {
+            return Some(ai.saturating_add(1));
+        }
+    }
+    // The bottom strip of a page, and the gap under it down to the next page.
+    for (idx, (page, r)) in ordered.iter().enumerate() {
+        let band = (r.height() * 0.30).clamp(8.0, 80.0).min(r.height());
+        let top = r.max.y - band;
+        let next = ordered.get(idx + 1).filter(|(n, nr)| *n == page.saturating_add(1) && nr.min.y + 4.0 >= r.max.y);
+        let bottom = next.map(|(_, nr)| nr.min.y).unwrap_or(r.max.y + 72.0);
+        if p.x >= r.min.x - 48.0 && p.x <= r.max.x + 48.0 && p.y >= top && p.y <= bottom {
+            return Some(page.saturating_add(1));
+        }
+    }
+    None
 }
 
 /// Organize pages: a thumbnail grid (Acrobat's Organize Pages view). Click selects, ⌘-click
@@ -5203,6 +5115,11 @@ fn organize_grid(view: &mut DocView, info: &DocInfo, editable: bool, dirty: bool
                     Stroke::new(1.0, t.border)
                 };
                 ui.painter().rect_stroke(card_rect, CornerRadius::same(10), card_stroke, egui::StrokeKind::Inside);
+                if view.selected.contains(&i) {
+                    let mark = Rect::from_center_size(card_rect.right_top() + vec2(-16.0, 16.0), vec2(18.0, 18.0));
+                    ui.painter().circle_filled(mark.center(), 8.0, t.accent);
+                    icons::paint(ui, mark, "check", 12.0, Color32::WHITE);
+                }
                 ui.painter().rect_filled(pr.translate(vec2(0.0, 1.5)), CornerRadius::same(1), t.page_shadow);
                 ui.painter().rect_filled(pr, CornerRadius::ZERO, Color32::WHITE);
                 // A page drawn larger than its thumbnail gets a render at the size drawn, while
@@ -5487,6 +5404,31 @@ mod tests {
         assert_eq!(anchored_scroll(pos2(150.0, 800.0), vec2(100.0, 100.0), content, viewport), vec2(50.0, 700.0));
         // Content smaller than the viewport: no scrolling.
         assert_eq!(anchored_scroll(pos2(400.0, 400.0), Vec2::ZERO, vec2(500.0, 500.0), viewport), vec2(0.0, 0.0));
+    }
+
+    #[test]
+    fn a_file_dropped_on_a_page_bottom_or_the_gap_under_it_inserts_after_that_page() {
+        // Page 3 (index 2) then page 4, stacked, with a gap between them.
+        let page3 = Rect::from_min_max(pos2(100.0, 40.0), pos2(400.0, 340.0));
+        let page4 = Rect::from_min_max(pos2(100.0, 360.0), pos2(400.0, 660.0));
+        let pages = [(2, page3), (3, page4)];
+        // The bottom strip of page 3.
+        assert_eq!(insert_after_page(&pages, pos2(200.0, 330.0)), Some(3));
+        // The gap between page 3 and page 4.
+        assert_eq!(insert_after_page(&pages, pos2(200.0, 350.0)), Some(3));
+        // The body of page 3 is not a drop target.
+        assert_eq!(insert_after_page(&pages, pos2(200.0, 120.0)), None);
+        // The bottom of page 4, with nothing after it, inserts at the end.
+        assert_eq!(insert_after_page(&pages, pos2(200.0, 650.0)), Some(4));
+        assert_eq!(insert_after_page(&pages, pos2(200.0, 700.0)), Some(4));
+        // Beside the page, and an empty list.
+        assert_eq!(insert_after_page(&pages, pos2(20.0, 330.0)), None);
+        assert_eq!(insert_after_page(&[], pos2(200.0, 330.0)), None);
+        // A spread: the gutter between page 3 and page 4 inserts after page 3.
+        let left = Rect::from_min_max(pos2(40.0, 80.0), pos2(240.0, 400.0));
+        let right = Rect::from_min_max(pos2(260.0, 80.0), pos2(460.0, 400.0));
+        assert_eq!(insert_after_page(&[(2, left), (3, right)], pos2(250.0, 200.0)), Some(3));
+        assert_eq!(insert_after_page(&[(2, left), (3, right)], pos2(400.0, 390.0)), Some(4));
     }
 
     #[test]

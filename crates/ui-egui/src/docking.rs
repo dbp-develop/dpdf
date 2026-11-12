@@ -68,7 +68,7 @@ impl Default for Workspace {
             layout: Layout {
                 root: Some(split(
                     SplitAxis::Horizontal,
-                    SplitSize::FixedFirst(272.0),
+                    SplitSize::FixedFirst(280.0),
                     tabs(Panel::Tools),
                     split(SplitAxis::Horizontal, SplitSize::FixedSecond(330.0), tabs(Panel::Canvas), tabs(Panel::Inspector)),
                 )),
