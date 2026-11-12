@@ -2,6 +2,8 @@
 
 **Stage: alpha** · next: beta, ~25% (ready for real work 50% → 75%) and ~400–700 h away
 
+> **Last reviewed:** 2026-11-12 · **Last updated:** 2026-11-12 · **Change:** minor (v2.1.1: OCR models and craft-fonts ship in the Windows and macOS installers, and a silent per-user update is accepted; estimates unchanged)
+
 > **Last reviewed:** 2026-11-12 · **Last updated:** 2026-11-12 · **Change:** minor (the Windows and macOS release build compiles in the craft-fonts faces and still ships the OCR models, so an install works offline; estimates unchanged)
 
 > **Last reviewed:** 2026-11-12 · **Last updated:** 2026-11-12 · **Change:** minor (Windows, macOS and the other release packages ship the OCR model files beside the app; a placeholder models folder is no longer enough; estimates unchanged)
